@@ -57,7 +57,10 @@ def join_translation(qs, model, field):
     qs.query = qs.query.clone(TranslationQuery)
     t1 = qs.query.join(connection, always_create=True, promote=True)
     t2 = qs.query.join(connection, always_create=True, promote=True)
-    qs.query.translation_aliases = {field: (t1, t2)}
+
+    if not hasattr(qs.query, 'translation_aliases'):
+        qs.query.translation_aliases = {}
+    qs.query.translation_aliases[field] = (t1, t2)
 
     fmt = dict(t1=t1, t2=t2)
     ifnull = ('IFNULL({t1}.`localized_string`, {t2}.`localized_string`)'
@@ -104,14 +107,16 @@ class SQLCompiler(compiler.SQLCompiler):
 
         joins, params = super(SQLCompiler, self).get_from_clause()
 
-        # fallback could be a string locale or a model field.
-        params.append(translation_utils.get_language())
-        if hasattr(self.query.model, 'get_fallback'):
-            fallback = self.query.model.get_fallback()
-        else:
-            fallback = settings.LANGUAGE_CODE
-        if not isinstance(fallback, models.Field):
-            params.append(fallback)
+        # Add the JOIN params once for each field we're linking against.
+        for _ in self.query.translation_aliases:
+            # fallback could be a string locale or a model field.
+            params.append(translation_utils.get_language())
+            if hasattr(self.query.model, 'get_fallback'):
+                fallback = self.query.model.get_fallback()
+            else:
+                fallback = settings.LANGUAGE_CODE
+            if not isinstance(fallback, models.Field):
+                params.append(fallback)
 
         # Add our locale-aware joins.  We're not respecting the table ordering
         # Django had in query.tables, but that seems to be ok.
