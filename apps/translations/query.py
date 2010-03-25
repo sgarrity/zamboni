@@ -33,10 +33,7 @@ def order_by_translation(qs, fieldname):
         desc = False
 
     qs = qs.all()
-    model = qs.model
-    field = model._meta.get_field(fieldname)
-
-    qs = join_translation(qs, model, field)
+    field = qs.model._meta.get_field(fieldname)
 
     prefix = '-' if desc else ''
     return qs.extra(order_by=[prefix + field.alias])
