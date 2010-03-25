@@ -123,7 +123,6 @@ class TranslationTestCase(ExtraAppTestCase):
         translation.deactivate()
         english = get_model()
         trans_eq(english.name, 'english name', 'en-US')
-        english.debug = True
         eq_(english.description, None)
 
         english.description = 'english description'

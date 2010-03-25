@@ -93,11 +93,13 @@ class TranslationQueryMixin(object):
 
     def get_compiler(self, using=None, connection=None):
         # Call super to figure out using and connection.
-        if not hasattr(self, 'translation_aliases'):
-            return super(TranslationQueryMixin, self).get_compiler(using,
-                                                              connection)
         c = super(TranslationQueryMixin, self).get_compiler(using, connection)
-        return SQLCompiler(self, c.connection, c.using)
+        if not hasattr(self, 'translation_aliases'):
+            return c
+        # Make a hybrid with our compiler and the default compiler.
+        compiler = type('Translation_%s' % c.__class__.__name__,
+                        (SQLCompilerMixin, c.__class__), {})
+        return compiler(self, c.connection, c.using)
 
 
 class TranslationQuery(TranslationQueryMixin, models.query.sql.Query):
@@ -108,7 +110,7 @@ class TranslationQuery(TranslationQueryMixin, models.query.sql.Query):
 
 
 
-class SQLCompiler(compiler.SQLCompiler):
+class SQLCompilerMixin(object):
     """Overrides get_from_clause to LEFT JOIN translations with a locale."""
 
     def get_from_clause(self):
@@ -118,7 +120,7 @@ class SQLCompiler(compiler.SQLCompiler):
         for table in itertools.chain(*self.query.translation_aliases.values()):
             self.query.tables.remove(table)
 
-        joins, params = super(SQLCompiler, self).get_from_clause()
+        joins, params = super(SQLCompilerMixin, self).get_from_clause()
 
         # Add the JOIN params once for each field we're linking against.
         for _ in self.query.translation_aliases:
