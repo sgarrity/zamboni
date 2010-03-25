@@ -3,8 +3,18 @@ import itertools
 from django.conf import settings
 from django.db import models
 from django.db.models.sql import compiler
-
 from django.utils import translation as translation_utils
+
+import caching
+
+
+class TranslationManager(caching.base.CachingManager):
+
+    def get_query_set(self):
+        qs = super(TranslationManager, self).get_query_set()
+        for field in self.model._meta.translated_fields:
+            name, qs = join_translation(qs, self.model, field)
+        return qs
 
 
 def order_by_translation(qs, fieldname):
@@ -25,6 +35,13 @@ def order_by_translation(qs, fieldname):
     model = qs.model
     field = model._meta.get_field(fieldname)
 
+    name, qs = join_translation(qs, model, field)
+
+    prefix = '-' if desc else ''
+    return qs.extra(order_by=[prefix + name])
+
+
+def join_translation(qs, model, field):
     # (lhs, rhs, lhs_col, rhs_col) => lhs.lhs_col = rhs.rhs_col
     connection = (model._meta.db_table, field.rel.to._meta.db_table,
                   field.column, field.rel.field_name)
@@ -43,8 +60,8 @@ def order_by_translation(qs, fieldname):
 
     name = 'translated_%s' % field.column
     ifnull = 'IFNULL(%s.`localized_string`, %s.`localized_string`)' % (t1, t2)
-    prefix = '-' if desc else ''
-    return qs.extra(select={name: ifnull}, order_by=[prefix + name])
+    return name, qs.extra(select={name: ifnull})
+
 
 
 class TranslationQuery(models.query.sql.Query):
@@ -55,12 +72,17 @@ class TranslationQuery(models.query.sql.Query):
 
     def clone(self, klass=None, **kwargs):
         # Maintain translation_aliases across clones.
+        if not hasattr(self, 'translation_aliases'):
+            return super(TranslationQuery, self).clone(klass, **kwargs)
         c = super(TranslationQuery, self).clone(klass, **kwargs)
         c.translation_aliases = self.translation_aliases
         return c
 
     def get_compiler(self, using=None, connection=None):
         # Call super to figure out using and connection.
+        if not hasattr(self, 'translation_aliases'):
+            return super(TranslationQuery, self).get_compiler(using,
+                                                              connection)
         c = super(TranslationQuery, self).get_compiler(using, connection)
         return SQLCompiler(self, c.connection, c.using)
 
