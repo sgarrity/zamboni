@@ -19,6 +19,7 @@ class TranslatedField(models.ForeignKey):
         options = dict(null=True, to_field='id', unique=True, blank=True)
         kwargs.update(options)
         super(TranslatedField, self).__init__(self.model, **kwargs)
+        self.alias = None  # Assigned in contribute_to_class.
 
     @property
     def db_column(self):
@@ -36,12 +37,13 @@ class TranslatedField(models.ForeignKey):
     def contribute_to_class(self, cls, name):
         """Add this Translation to ``cls._meta.translated_fields``."""
         super(TranslatedField, self).contribute_to_class(cls, name)
+        self.alias = 'translated_%s' % self.column
 
         # Add self to the list of translated fields.
         if hasattr(cls._meta, 'translated_fields'):
-            cls._meta.translated_fields.append(self)
+            cls._meta.translated_fields[self] = self.alias
         else:
-            cls._meta.translated_fields = [self]
+            cls._meta.translated_fields = {self: self.alias}
 
         # Set up a unique related name.
         self.rel.related_name = '%s_%s_set' % (cls.__name__, name)
@@ -169,9 +171,13 @@ class TranslatedFieldMixin(object):
         if hasattr(self._meta, 'translated_fields'):
             fields = self._meta.translated_fields
         else:
-            fields = [f for f in self._meta.fields
-                      if isinstance(f, TranslatedField)]
+            fields = dict((f, f.alias) for f in self._meta.fields
+                          if isinstance(f, TranslatedField))
             self._meta.translated_fields = fields
+
+        for field, alias in self._meta.translated_fields.items():
+            pass
+
 
         # Map the attribute name to the object name: 'name_id' => 'name'
         names = dict((f.attname, f.name) for f in fields)

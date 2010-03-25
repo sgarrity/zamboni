@@ -35,10 +35,10 @@ def order_by_translation(qs, fieldname):
     model = qs.model
     field = model._meta.get_field(fieldname)
 
-    name, qs = join_translation(qs, model, field)
+    qs = join_translation(qs, model, field)
 
     prefix = '-' if desc else ''
-    return qs.extra(order_by=[prefix + name])
+    return qs.extra(order_by=[prefix + field.alias])
 
 
 def join_translation(qs, model, field):
@@ -58,9 +58,8 @@ def join_translation(qs, model, field):
     t2 = qs.query.join(connection, always_create=True, promote=True)
     qs.query.translation_aliases = {field: (t1, t2)}
 
-    name = 'translated_%s' % field.column
     ifnull = 'IFNULL(%s.`localized_string`, %s.`localized_string`)' % (t1, t2)
-    return name, qs.extra(select={name: ifnull})
+    return qs.extra(select={field.alias: ifnull})
 
 
 
