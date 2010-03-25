@@ -2,11 +2,12 @@ from django.db import models
 
 import caching.base
 from translations.fields import TranslatedFieldMixin
+from translations.query import TranslationManager
 
 
 # Our apps should subclass BaseManager instead of models.Manager or
 # caching.base.CachingManager directly.
-ManagerBase = caching.base.CachingManager
+ManagerBase = TranslationManager
 
 
 class ModelBase(caching.base.CachingMixin, TranslatedFieldMixin, models.Model):
