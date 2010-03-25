@@ -101,7 +101,7 @@ class TranslationTestCase(ExtraAppTestCase):
         # Check that a different locale creates a new row with the same id.
         translation.activate('de')
         german = get_model()
-        trans_eq(o.name, 'english name', 'en-US')
+        trans_eq(german.name, 'english name', 'en-US')
 
         german.name = u'Gemütlichkeit name'
         german.description = u'clöüserw description'

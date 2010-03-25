@@ -72,27 +72,35 @@ def join_translation(qs, model, field):
 
 
 
-class TranslationQuery(models.query.sql.Query):
-    """
-    Overrides sql.Query to hit our special compiler that knows how to JOIN
-    translations.
-    """
+class TranslationQueryMixin(object):
 
     def clone(self, klass=None, **kwargs):
         # Maintain translation_aliases across clones.
         if not hasattr(self, 'translation_aliases'):
-            return super(TranslationQuery, self).clone(klass, **kwargs)
-        c = super(TranslationQuery, self).clone(klass, **kwargs)
+            return super(TranslationQueryMixin, self).clone(klass, **kwargs)
+        if (klass not in (None, models.query.sql.Query)
+            and not issubclass(klass, TranslationQueryMixin)):
+            klass = type('Translation_%s' % klass.__name__,
+                         (TranslationQueryMixin, klass), {})
+        c = super(TranslationQueryMixin, self).clone(klass, **kwargs)
         c.translation_aliases = self.translation_aliases
         return c
 
     def get_compiler(self, using=None, connection=None):
         # Call super to figure out using and connection.
         if not hasattr(self, 'translation_aliases'):
-            return super(TranslationQuery, self).get_compiler(using,
+            return super(TranslationQueryMixin, self).get_compiler(using,
                                                               connection)
-        c = super(TranslationQuery, self).get_compiler(using, connection)
+        c = super(TranslationQueryMixin, self).get_compiler(using, connection)
         return SQLCompiler(self, c.connection, c.using)
+
+
+class TranslationQuery(TranslationQueryMixin, models.query.sql.Query):
+    """
+    Overrides sql.Query to hit our special compiler that knows how to JOIN
+    translations.
+    """
+
 
 
 class SQLCompiler(compiler.SQLCompiler):
