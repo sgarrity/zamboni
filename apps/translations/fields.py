@@ -19,7 +19,6 @@ class TranslatedField(models.ForeignKey):
         options = dict(null=True, to_field='id', unique=True, blank=True)
         kwargs.update(options)
         super(TranslatedField, self).__init__(self.model, **kwargs)
-        self.alias = None  # Assigned in contribute_to_class.
 
     @property
     def db_column(self):
@@ -39,6 +38,8 @@ class TranslatedField(models.ForeignKey):
         super(TranslatedField, self).contribute_to_class(cls, name)
         self.alias = 'translated_%s' % self.column
         self.alias_locale = '%s_locale' % self.alias
+        self.alias_autoid = '%s_autoid' % self.alias
+        self.alias_created = '%s_created' % self.alias
 
         # Add self to the list of translated fields.
         if hasattr(cls._meta, 'translated_fields'):
@@ -48,6 +49,8 @@ class TranslatedField(models.ForeignKey):
 
         setattr(cls, self.alias, FancyShit('localized_string', self))
         setattr(cls, self.alias_locale, FancyShit('locale', self))
+        setattr(cls, self.alias_autoid, FancyShit('autoid', self))
+        setattr(cls, self.alias_created, FancyShit('created', self))
 
         # Set up a unique related name.
         self.rel.related_name = '%s_%s_set' % (cls.__name__, name)

@@ -65,10 +65,15 @@ def join_translation(qs, model, field):
     fmt = dict(t1=t1, t2=t2)
     ifnull = ('IFNULL({t1}.`localized_string`, {t2}.`localized_string`)'
               .format(**fmt))
-    ifnull_locale = ('IF(!ISNULL({t1}.`localized_string`),'
-                     '   {t1}.`locale`, {t2}.`locale`)'.format(**fmt))
+    ifnull_field = ('IF(!ISNULL({t1}.`localized_string`),'
+                    '   {t1}.`{field}`, {t2}.`{field}`)')
+    ifnull_locale = ifnull_field.format(field='locale', **fmt)
+    ifnull_autoid = ifnull_field.format(field='autoid', **fmt)
+    ifnull_created = ifnull_field.format(field='created', **fmt)
     return qs.extra(select={field.alias: ifnull,
-                            field.alias_locale: ifnull_locale})
+                            field.alias_locale: ifnull_locale,
+                            field.alias_autoid: ifnull_autoid,
+                            field.alias_created: ifnull_created})
 
 
 
