@@ -90,8 +90,10 @@ class FancyShit(object):
         self.field = field
 
     def __set__(self, instance, value):
-        t = getattr(instance, self.field.name)
         trans_id = getattr(instance, self.field.attname)
+        if trans_id is None or value is None:
+            return
+        t = getattr(instance, self.field.name)
         trans = Translation(id=trans_id) if t is None else t
         setattr(trans, self.attr, value)
         setattr(instance, self.field.name, trans)
