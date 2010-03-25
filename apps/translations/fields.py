@@ -88,7 +88,8 @@ class FancyShit(object):
 
     def __set__(self, instance, value):
         t = getattr(instance, self.field.name)
-        trans = Translation() if t is None else t
+        trans_id = getattr(instance, self.field.attname)
+        trans = Translation(id=trans_id) if t is None else t
         setattr(trans, self.attr, value)
         setattr(instance, self.field.name, trans)
 
@@ -178,9 +179,6 @@ class TranslationDescriptor(related.ReverseSingleRelatedObjectDescriptor):
 
 class TranslatedFieldMixin(object):
     """Mixin that fetches all ``TranslatedFields`` after instantiation."""
-
-    def __init__(self, *args, **kw):
-        super(TranslatedFieldMixin, self).__init__(*args, **kw)
 
     def _set_translated_fields(self):
         """Fetch and attach all of this object's translations."""
