@@ -12,8 +12,9 @@ class TranslationManager(caching.base.CachingManager):
 
     def get_query_set(self):
         qs = super(TranslationManager, self).get_query_set()
-        for field in self.model._meta.translated_fields:
-            name, qs = join_translation(qs, self.model, field)
+        if hasattr(self.model._meta, 'translated_fields'):
+            for field in self.model._meta.translated_fields:
+                qs = join_translation(qs, self.model, field)
         return qs
 
 
@@ -58,8 +59,13 @@ def join_translation(qs, model, field):
     t2 = qs.query.join(connection, always_create=True, promote=True)
     qs.query.translation_aliases = {field: (t1, t2)}
 
-    ifnull = 'IFNULL(%s.`localized_string`, %s.`localized_string`)' % (t1, t2)
-    return qs.extra(select={field.alias: ifnull})
+    fmt = dict(t1=t1, t2=t2)
+    ifnull = ('IFNULL({t1}.`localized_string`, {t2}.`localized_string`)'
+              .format(**fmt))
+    ifnull_locale = ('IF(!ISNULL({t1}.`localized_string`),'
+                     '   {t1}.`locale`, {t2}.`locale`)'.format(**fmt))
+    return qs.extra(select={field.alias: ifnull,
+                            field.alias_locale: ifnull_locale})
 
 
 

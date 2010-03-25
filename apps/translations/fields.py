@@ -38,12 +38,16 @@ class TranslatedField(models.ForeignKey):
         """Add this Translation to ``cls._meta.translated_fields``."""
         super(TranslatedField, self).contribute_to_class(cls, name)
         self.alias = 'translated_%s' % self.column
+        self.alias_locale = '%s_locale' % self.alias
 
         # Add self to the list of translated fields.
         if hasattr(cls._meta, 'translated_fields'):
             cls._meta.translated_fields[self] = self.alias
         else:
             cls._meta.translated_fields = {self: self.alias}
+
+        setattr(cls, self.alias, FancyShit('localized_string', self))
+        setattr(cls, self.alias_locale, FancyShit('locale', self))
 
         # Set up a unique related name.
         self.rel.related_name = '%s_%s_set' % (cls.__name__, name)
@@ -74,6 +78,19 @@ def switch(obj, new_model):
     """Switch between Translation and Purified/Linkified Translations."""
     fields = [(f.name, getattr(obj, f.name)) for f in new_model._meta.fields]
     return new_model(**dict(fields))
+
+
+class FancyShit(object):
+
+    def __init__(self, attr, field):
+        self.attr = attr
+        self.field = field
+
+    def __set__(self, instance, value):
+        t = getattr(instance, self.field.name)
+        trans = Translation() if t is None else t
+        setattr(trans, self.attr, value)
+        setattr(instance, self.field.name, trans)
 
 
 class TranslationDescriptor(related.ReverseSingleRelatedObjectDescriptor):
@@ -164,7 +181,6 @@ class TranslatedFieldMixin(object):
 
     def __init__(self, *args, **kw):
         super(TranslatedFieldMixin, self).__init__(*args, **kw)
-        self._set_translated_fields()
 
     def _set_translated_fields(self):
         """Fetch and attach all of this object's translations."""
@@ -174,10 +190,6 @@ class TranslatedFieldMixin(object):
             fields = dict((f, f.alias) for f in self._meta.fields
                           if isinstance(f, TranslatedField))
             self._meta.translated_fields = fields
-
-        for field, alias in self._meta.translated_fields.items():
-            pass
-
 
         # Map the attribute name to the object name: 'name_id' => 'name'
         names = dict((f.attname, f.name) for f in fields)
