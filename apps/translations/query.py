@@ -67,12 +67,15 @@ def join_translation(qs, model, field):
     ifnull_locale = ifnull_field.format(field='locale', **fmt)
     ifnull_autoid = ifnull_field.format(field='autoid', **fmt)
     ifnull_created = ifnull_field.format(field='created', **fmt)
-    return qs.extra(select={field.alias: ifnull,
-                            field.alias_locale: ifnull_locale,
-                            field.alias_autoid: ifnull_autoid,
-                            field.alias_created: ifnull_created})
+    s = dict(zip(translation_fields(field),
+                 [ifnull, ifnull_locale, ifnull_created, ifnull_autoid]))
+    return qs.extra(select=s)
 
 
+def translation_fields(field):
+    """These are the names of the extra translation fields we add."""
+    return (field.alias, field.alias_locale,
+            field.alias_created, field.alias_autoid)
 
 class TranslationQueryMixin(object):
 
@@ -85,7 +88,7 @@ class TranslationQueryMixin(object):
             klass = type('Translation_%s' % klass.__name__,
                          (TranslationQueryMixin, klass), {})
         c = super(TranslationQueryMixin, self).clone(klass, **kwargs)
-        c.translation_aliases = self.translation_aliases
+        c.translation_aliases = self.translation_aliases.copy()
         return c
 
     def get_compiler(self, using=None, connection=None):
@@ -98,13 +101,38 @@ class TranslationQueryMixin(object):
                         (SQLCompilerMixin, c.__class__), {})
         return compiler(self, c.connection, c.using)
 
+    def change_aliases(self, change_map):
+        # This gets called once for query_key and once to generate a query.  We
+        # switched everything the first time, so just let the error pass next
+        # time through.
+        try:
+            # Django is remapping our table names.
+            for field, tables in self.translation_aliases.items():
+                new = map(change_map.__getitem__, tables)
+                self.translation_aliases[field] = new
+        except KeyError:
+            pass
+        super(TranslationQueryMixin, self).change_aliases(change_map)
+
+
+    def combine(self, rhs, connector):
+        """If rhs has translation joins, remove those."""
+        if hasattr(rhs, 'translation_aliases'):
+            rhs = rhs.clone()
+            for field, tables in rhs.translation_aliases.items():
+                for table in tables:
+                    rhs.tables.remove(table)
+                # TODO(jbalogh): having all the fields here is lame.
+                for name in translation_fields(field):
+                    del rhs.extra[name]
+        super(TranslationQueryMixin, self).combine(rhs, connector)
+
 
 class TranslationQuery(TranslationQueryMixin, models.query.sql.Query):
     """
     Overrides sql.Query to hit our special compiler that knows how to JOIN
     translations.
     """
-
 
 
 class SQLCompilerMixin(object):

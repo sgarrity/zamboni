@@ -196,6 +196,21 @@ class TranslationTestCase(ExtraAppTestCase):
         ws = widgets.trans_widgets(o.name_id, lambda *args: None)
         eq_(sorted(dict(ws).keys()), ['en-us', 'fr'])
 
+    def test_subquery(self):
+        sub = TranslatedModel.objects.filter(id__lte=12)
+        q = TranslatedModel.objects.filter(id__gt=3, id__in=sub)
+        eq_([4], [x.id for x in q.all()])
+
+    def test_combine_or(self):
+        a = TranslatedModel.objects.filter(id=3)
+        b = TranslatedModel.objects.filter(id=4)
+        eq_([3, 4], [x.id for x in (a | b).all()])
+
+    def test_combine_and(self):
+        a = TranslatedModel.objects.filter(id__gte=3)
+        b = TranslatedModel.objects.filter(id__lte=4)
+        eq_([3, 4], [x.id for x in (a & b).all()])
+
     def test_sorting(self):
         """Test translation comparisons in Python code."""
         b = Translation.new('bbbb', 'de')
