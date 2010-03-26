@@ -112,20 +112,26 @@ class TranslationQueryMixin(object):
                 self.translation_aliases[field] = new
         except KeyError:
             pass
+        remove_translations(self)
         super(TranslationQueryMixin, self).change_aliases(change_map)
-
 
     def combine(self, rhs, connector):
         """If rhs has translation joins, remove those."""
         if hasattr(rhs, 'translation_aliases'):
             rhs = rhs.clone()
-            for field, tables in rhs.translation_aliases.items():
-                for table in tables:
-                    rhs.tables.remove(table)
-                # TODO(jbalogh): having all the fields here is lame.
-                for name in translation_fields(field):
-                    del rhs.extra[name]
+            remove_translations(rhs)
         super(TranslationQueryMixin, self).combine(rhs, connector)
+
+
+def remove_translations(query):
+    """Remove extra translation fields and joins from the query."""
+    for field, tables in query.translation_aliases.items():
+        for table in tables:
+            query.tables.remove(table)
+        # TODO(jbalogh): having all the fields here is lame.
+        for name in translation_fields(field):
+            del query.extra[name]
+    query.translation_aliases = {}
 
 
 class TranslationQuery(TranslationQueryMixin, models.query.sql.Query):
