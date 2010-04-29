@@ -266,6 +266,8 @@
   {% endif %}{# /meet the devs #}
 
   {# categories and other add-ons #}
+  {% cache author_addons %}
+  {# Caching by author_addons hides any changes to the add-on's categories, but that's ok. #}
   {% with categories = addon.categories.filter(application=APP.id) %}
     {% if categories or author_addons|length > 1 %}
       <div class="highlight">
@@ -329,7 +331,7 @@
       </div> {# /highlight #}
     {% endif %}
   {% endwith %}
-  {# /categories #}
+  {% endcache %} {# /categories #}
 
 
   {# support box #}
@@ -366,7 +368,7 @@
 
   {{ tags_box(addon=addon, dev_tags=dev_tags, user_tags=user_tags) }}
 
-  {# addon recommendations #}
+  {% cache recommendations %}
   {% if recommendations %}
     <div>
       <h3 class="compact-bottom">{{ _('Often used with&hellip;')|safe }}</h3>
@@ -380,15 +382,15 @@
       </ul>
     </div>
   {% endif %}
-  {# /recommendations #}
+  {% endcache %} {# /recommendations #}
 
   {# related collections #}
   <div class="collections-add">
     <h3 class="compact-bottom">{{ _('Related Collections') }}</h3>
 
     {% set collections = other_collections[:3] %}
+    {% cache collections %}
     {% if collections %}
-      {% cache collections %}
       <ul class="addon-collections">
         {% for coll in collections %}
         <li><a href="{{ coll.get_url_path() }}"
@@ -408,10 +410,10 @@
         </li>
         {% endif %}
       </ul>
-      {% endcache %}
     {% else %}
       <p>{{ _('This add-on is not yet in any collections.') }}</p>
     {% endif %}
+    {% endcache %}
 
     {% if user.is_authenticated() %}
       {# TODO reverse URLs #}
