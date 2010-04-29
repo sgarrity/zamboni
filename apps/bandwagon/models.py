@@ -39,7 +39,7 @@ class Collection(amo.models.ModelBase):
         default=True, help_text='Collections are either listed or private.')
     password = models.CharField(max_length=255, blank=True)
 
-    subscribers = models.PositiveIntegerField(default=0)
+    subscribers = models.PositiveIntegerField(default=0, db_index=True)
     downloads = models.PositiveIntegerField(default=0)
     weekly_subscribers = models.PositiveIntegerField(default=0)
     monthly_subscribers = models.PositiveIntegerField(default=0)
