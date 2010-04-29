@@ -90,11 +90,9 @@ def extension_detail(request, addon):
         recommended_for__addon=addon)[:5]
 
     # popular collections this addon is part of
-    coll_show_count = 3
     collections = Collection.objects.listed().filter(
-        addons=addon, application__id=request.APP.id)
-    other_coll_count = max(0, collections.count() - coll_show_count)
-    popular_coll = collections.order_by('-subscribers')[:coll_show_count]
+        addons=addon, application=request.APP.id)
+    other_collections = collections.order_by('-subscribers')
 
     # this user's collections
     if request.user.is_authenticated():
@@ -115,8 +113,7 @@ def extension_detail(request, addon):
 
         'recommendations': recommended,
 
-        'collections': popular_coll,
-        'other_collection_count': other_coll_count,
+        'other_collections': other_collections,
         'user_collections': user_collections,
     }
     return jingo.render(request, 'addons/details.html', data)

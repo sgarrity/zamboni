@@ -359,6 +359,13 @@ class Addon(amo.models.ModelBase):
                   .values_list('service', 'count'))
         return rv
 
+    @caching.cached_method
+    def collection_count(self, app):
+        """Get the # of public collections for app that contain this add-on."""
+        c = (self._collection_count.filter(application=app.id)
+             .values_list('count', flat=True))
+        return c and c[0] or 0
+
 
 class Persona(caching.CachingMixin, models.Model):
     """Personas-specific additions to the add-on model."""

@@ -206,3 +206,13 @@ class CollectionVote(models.Model):
 
     class Meta:
         db_table = 'collections_votes'
+
+
+class AddonCollectionCount(models.Model):
+    """Caches how many collections for an app contain the add-on."""
+    addon = models.ForeignKey(Addon, related_name='_collection_count')
+    application = models.ForeignKey(Application)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'addons_collections_counts'

@@ -391,19 +391,20 @@
   <div class="collections-add">
     <h3 class="compact-bottom">{{ _('Related Collections') }}</h3>
 
-    {% if not collections %}
-      <p>{{ _('This add-on is not yet in any collections.') }}</p>
-    {% else %}
+    {% set collections = other_collections[:3] %}
+    {% if collections %}
+      {% cache collections %}
       <ul class="addon-collections">
         {% for coll in collections %}
         <li><a href="{{ coll.get_url_path() }}"
                class="collectionitem">{{ coll.name }}</a></li>
         {% endfor %}
-        {% if other_collection_count %}
+        {% set other_count = addon.collection_count(APP) %}
+        {% if other_count > 3 %}
         {# TODO reverse URL #}
         <li>
           <a href="{{ remora_url('/collections/addon/{0}'|f(addon.id)) }}">
-            {% trans count=other_collection_count %}
+            {% trans count=(other_count - 3)|numberfmt %}
             and {{ count }} more collection
             {% pluralize %}
             and {{ count }} more collections
@@ -412,6 +413,9 @@
         </li>
         {% endif %}
       </ul>
+      {% endcache %}
+    {% else %}
+      <p>{{ _('This add-on is not yet in any collections.') }}</p>
     {% endif %}
 
     {% if user.is_authenticated() %}

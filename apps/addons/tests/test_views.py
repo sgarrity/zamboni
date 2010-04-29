@@ -203,13 +203,6 @@ class TestDetailPage(test_utils.TestCase):
         eq_(doc('#addon-summary a[href^="%s"]' %
                 settings.REDIRECT_URL).length, 1)
 
-    def test_other_collection_count(self):
-        """Other collection count must not get negative."""
-        addon = Addon.objects.get(id=1843)
-        response = self.client.get(reverse('addons.detail', args=[addon.id]),
-                                   follow=True)
-        assert response.context['other_collection_count'] >= 0
-
     def test_privacy_policy(self):
         """Make sure privacy policy is shown when present."""
         addon = Addon.objects.get(id=1843)
