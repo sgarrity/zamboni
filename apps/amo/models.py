@@ -18,6 +18,13 @@ class TransformQuerySet(queryset_transform.TransformQuerySet):
     def no_transforms(self):
         return self.pop_transforms()[1]
 
+    def only_translations(self):
+        """Remove all transforms except translations."""
+        qs = self.no_transforms()
+        if hasattr(self.model._meta, 'translated_fields'):
+            qs = qs.transform(transformer.get_trans)
+        return qs
+
 
 # Make TransformQuerySet one of CachingQuerySet's parents so that we can do
 # transforms on objects and then get them cached.
