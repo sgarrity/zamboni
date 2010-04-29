@@ -129,7 +129,7 @@
     {% endif %}
 
     {% if addon.developer_comments %}
-    <h4>{{ _('Developer Comments', 'addons_display_developer_comments') }}</h4>
+      <h4>{{ _('Developer Comments', 'addons_display_developer_comments') }}</h4>
       <div class="prose userinput">
         <p{{ addon.developer_comments|locale_html }}>{{
           addon.developer_comments|nl2br }}</p>
@@ -176,63 +176,62 @@
 
 
   {% if not addon.is_selfhosted() and version %}
-  <h3 id="releasenotes">{{ _('Release Notes', 'addons_display_release_notes') }}</h3>
-  <div class="article">
-    {# TODO reverse URL #}
-    {% set base = remora_url('/addons/versions/{0}'|f(addon.id)) %}
-    <p><a href="{{ base }}#version-{{ version.version }}"
-          title="{{ _('Permanent link to this version') }}">
-         {{ _('Version {0}', 'addon_display_header_version')|f(version.version) }}</a>
-      &mdash;
-      <span title="{{ version.created|isotime }}">{{
-        version.created|datetime }}</span>
-      {% if version.has_files %}
-        &mdash;
-        {{ _('{0} KB')|f(version.all_files[0].size|int|numberfmt) }}
-      {% endif %}
-    </p>
-
-    <div class="prose userinput">
-      <p id="release-notes"{{ version.releasenotes|locale_html }}>
-        {{ version.releasenotes|nl2br }}
-      </p>
-    </div>
-
-    {# License #}
-    {% if version.license %}
-      <h5 id="license">
-        {{ _('Source Code License') }}
-        {# TODO reverse URL #}
-        <a href="{{ remora_url('/pages/developer_faq#license') }}">
-          {{ _("What's this?", 'addons_display_a_license_what') }}
-        </a>
-      </h5>
+    <h3 id="releasenotes">{{ _('Release Notes', 'addons_display_release_notes') }}</h3>
+    <div class="article">
       {# TODO reverse URL #}
-      <p>
-        <a href="{{ remora_url('/versions/license/{0}'|f(version.id)) }}">
-          {{ version.license.name }}</a>
+      {% set base = remora_url('/addons/versions/{0}'|f(addon.id)) %}
+      <p><a href="{{ base }}#version-{{ version.version }}"
+            title="{{ _('Permanent link to this version') }}">
+           {{ _('Version {0}', 'addon_display_header_version')|f(version.version) }}</a>
+        &mdash;
+        <span title="{{ version.created|isotime }}">{{
+          version.created|datetime }}</span>
+        {% if version.has_files %}
+          &mdash;
+          {{ _('{0} KB')|f(version.all_files[0].size|int|numberfmt) }}
+        {% endif %}
       </p>
-    {% endif %}
 
-    <ul class="further-navigation">
-      {% if addon.view_source and user.is_authenticated() and
-        version.has_files %}
-        <li>
+      <div class="prose userinput">
+        <p id="release-notes"{{ version.releasenotes|locale_html }}>
+          {{ version.releasenotes|nl2br }}
+        </p>
+      </div>
+
+      {# License #}
+      {% if version.license %}
+        <h5 id="license">
+          {{ _('Source Code License') }}
           {# TODO reverse URL #}
-          <a href="{{ remora_url('/files/browse/{0}'|f(version.all_files[0].pk)) }}">
-            {{ _('View the source') }}</a>
-        </li>
-      {% endif %}
-      {% if not addon.is_selfhosted() %}
-        <li>
-          {# TODO reverse URL #}
-          <a href="{{ remora_url('/addons/versions/{0}'|f(addon.id)) }}">
-            {{ _('View All Versions') }}
+          <a href="{{ remora_url('/pages/developer_faq#license') }}">
+            {{ _("What's this?", 'addons_display_a_license_what') }}
           </a>
-        </li>
+        </h5>
+        {# TODO reverse URL #}
+        <p>
+          <a href="{{ remora_url('/versions/license/{0}'|f(version.id)) }}">
+            {{ version.license.name }}</a>
+        </p>
       {% endif %}
-    </ul>
-  </div> <!-- Release Notes -->
+
+      <ul class="further-navigation">
+        {% if addon.view_source and user.is_authenticated() and version.has_files %}
+          <li>
+            {# TODO reverse URL #}
+            <a href="{{ remora_url('/files/browse/{0}'|f(version.all_files[0].pk)) }}">
+              {{ _('View the source') }}</a>
+          </li>
+        {% endif %}
+        {% if not addon.is_selfhosted() %}
+          <li>
+            {# TODO reverse URL #}
+            <a href="{{ remora_url('/addons/versions/{0}'|f(addon.id)) }}">
+              {{ _('View All Versions') }}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div> <!-- Release Notes -->
   {% endif %}
 
 </div>{# /primary #}
@@ -240,98 +239,94 @@
 <div class="secondary" role="navigation">
 
   {% if addon.the_reason and addon.the_future %}
-  <div class="highlight">
-    {% with single_dev = addon.listed_authors|random %}
-      <h3 class="compact-bottom">
-        {% trans count=addon.listed_authors|length %}
-        Meet the Developer
-        {% pluralize %}
-        Meet the Developers
-        {% endtrans %}
-      </h3>
-      <img class="avatar" alt="{{ single_dev.display_name }}" height="64"
-           width="64" src="{{ single_dev.picture_url }}"/>
-      <p>{{ _("Learn why {0} was created and find out what's next for this "
-              'add-on.')|f(addon.name) }}</p>
-      <p>
-        <a class="more-info" href="{{ addon.meet_the_dev_url() }}">
-        {% if addon.listed_authors|length > 1 %}
-          {{ _('Meet the Developers') }}
-        {% else %}
-          {{ _('Meet {0}')|f(single_dev.display_name) }}
-        {% endif %}
-        </a>
-      </p>
-    {% endwith %}
-  </div>
+    <div class="highlight">
+      {% with single_dev = addon.listed_authors|random %}
+        <h3 class="compact-bottom">
+          {% trans count=addon.listed_authors|length %}
+          Meet the Developer
+          {% pluralize %}
+          Meet the Developers
+          {% endtrans %}
+        </h3>
+        <img class="avatar" alt="{{ single_dev.display_name }}" height="64"
+             width="64" src="{{ single_dev.picture_url }}"/>
+        <p>{{ _("Learn why {0} was created and find out what's next for this "
+                'add-on.')|f(addon.name) }}</p>
+        <p>
+          <a class="more-info" href="{{ addon.meet_the_dev_url() }}">
+          {% if addon.listed_authors|length > 1 %}
+            {{ _('Meet the Developers') }}
+          {% else %}
+            {{ _('Meet {0}')|f(single_dev.display_name) }}
+          {% endif %}
+          </a>
+        </p>
+      {% endwith %}
+    </div>
   {% endif %}{# /meet the devs #}
 
   {# categories and other add-ons #}
   {% with categories = addon.categories.filter(application=APP.id) %}
     {% if categories or author_addons|length > 1 %}
-    <div class="highlight">
-      {% if categories %}
-        <ul>
-          {# TODO reverse URL #}
-          {% for category in categories %}
-          <li>
-            <a href="{{ category.get_remora_url_path() }}" class="more-info">
-              {{ _('See All {0} Add-ons')|f(category) }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-
-      {% if author_addons|length > 1 %}
-      <div class="other-author-addons">
-        <h4>
-          {% trans count = addon.listed_authors|length,
-                   author = users_list(addon.listed_authors) %}
-            Other add-ons by {{ author }}
-          {% pluralize %}
-            Other add-ons by these authors
-          {% endtrans %}
-        </h4>
-
-        {% if author_addons|length > 4 %}
-          <form id="addons-author-addons" method="get" action="">
-            <select id="addons-author-addons-select"
-              name="addons-author-addons-select"
-              onchange="this.form.submit()">
-            {% for other in author_addons %}
-              {% with id=other.id, title=other.name,
-                      name=other.name|string|truncate(25) %}
-                <option value="{{ id }}" title="{{ title }}"{{
-                        id == addon.id and ' selected="selected"' or '' }}>
-                  {{ name }}
-                </option>
-              {% endwith %}
-            {% endfor %}
-            </select>
-            <input class="hidden" type="submit" value="{{
-              _('Go', 'addons_author_addons_submit') }}"/>
-          </form>
-
-        {% else %}
+      <div class="highlight">
+        {% if categories %}
           <ul>
-          {% for other in author_addons %}
-            {% with id=other.id, title=other.name,
-                    name=other.name|string|truncate(25) %}
-              {%- if id == addon.id %}{% continue %}{% endif %}
-              <li>
-                <a href="{{ other.get_url_path() }}" title="{{ title }}"
-                   class="addonitem">{{ name }}</a>
-              </li>
-            {% endwith %}
-          {% endfor %}
+            {# TODO reverse URL #}
+            {% for category in categories %}
+            <li>
+              <a href="{{ category.get_remora_url_path() }}" class="more-info">
+                {{ _('See All {0} Add-ons')|f(category) }}
+              </a>
+            </li>
+            {% endfor %}
           </ul>
         {% endif %}
 
-      </div>{# /highlight #}
-      {% endif %}
-
-    </div>
+        {% if author_addons|length > 1 %}
+          <div class="other-author-addons">
+            <h4>
+              {% trans count = addon.listed_authors|length,
+                       author = users_list(addon.listed_authors) %}
+                Other add-ons by {{ author }}
+              {% pluralize %}
+                Other add-ons by these authors
+              {% endtrans %}
+            </h4>
+            {% if author_addons|length > 4 %}
+              <form id="addons-author-addons" method="get" action="">
+                <select id="addons-author-addons-select"
+                  name="addons-author-addons-select"
+                  onchange="this.form.submit()">
+                {% for other in author_addons %}
+                  {% with id=other.id, title=other.name,
+                          name=other.name|string|truncate(25) %}
+                    <option value="{{ id }}" title="{{ title }}"{{
+                            id == addon.id and ' selected="selected"' or '' }}>
+                      {{ name }}
+                    </option>
+                  {% endwith %}
+                {% endfor %}
+                </select>
+                <input class="hidden" type="submit" value="{{
+                  _('Go', 'addons_author_addons_submit') }}"/>
+              </form>
+            {% else %}
+              <ul>
+              {% for other in author_addons %}
+                {% with id=other.id, title=other.name,
+                        name=other.name|string|truncate(25) %}
+                  {%- if id == addon.id %}{% continue %}{% endif %}
+                  <li>
+                    <a href="{{ other.get_url_path() }}" title="{{ title }}"
+                       class="addonitem">{{ name }}</a>
+                  </li>
+                {% endwith %}
+              {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div> {# /highlight #}
     {% endif %}
   {% endwith %}
   {# /categories #}
@@ -339,33 +334,33 @@
 
   {# support box #}
   {% if addon.support_email or addon.support_url or addon.has_satisfaction %}
-  <div id="support" class="highlight">
-    <h3 class="compact-bottom">{{ _('Need help with this add-on?') }}</h3>
-    <ul class="xoxo">
+    <div id="support" class="highlight">
+      <h3 class="compact-bottom">{{ _('Need help with this add-on?') }}</h3>
+      <ul class="xoxo">
+        {% if addon.has_satisfaction %}
+          {# get satisfaction only supports en-US so no L10n here #}
+          <li>Ask others on
+            <a href="#" id="feedback_btn" class="feedback_btn"
+              data-company="{{ addon.get_satisfaction_company }}"
+              data-product="{{ addon.get_satisfaction_product }}"
+               >Get Satisfaction</a>
+          </li>
+        {% endif %}
+        {% if addon.support_email %}
+          <li><a href="mailto:{{ addon.support_email }}">{{
+            _('E-mail your question') }}</a></li>
+        {% endif %}
+        {% if addon.support_url %}
+          <li><a href="{{ addon.support_url|external_url }}">{{
+            _('Visit the support site') }}</a></li>
+        {% endif %}
+      </ul>
+
       {% if addon.has_satisfaction %}
-        {# get satisfaction only supports en-US so no L10n here #}
-        <li>Ask others on
-          <a href="#" id="feedback_btn" class="feedback_btn"
-            data-company="{{ addon.get_satisfaction_company }}"
-            data-product="{{ addon.get_satisfaction_product }}"
-             >Get Satisfaction</a>
-        </li>
+      <div id="get_satisfaction_container"></div>
       {% endif %}
-      {% if addon.support_email %}
-        <li><a href="mailto:{{ addon.support_email }}">{{
-          _('E-mail your question') }}</a></li>
-      {% endif %}
-      {% if addon.support_url %}
-        <li><a href="{{ addon.support_url|external_url }}">{{
-          _('Visit the support site') }}</a></li>
-      {% endif %}
-    </ul>
 
-    {% if addon.has_satisfaction %}
-    <div id="get_satisfaction_container"></div>
-    {% endif %}
-
-  </div>
+    </div>
   {% endif %}
   {# /support #}
 
@@ -373,17 +368,17 @@
 
   {# addon recommendations #}
   {% if recommendations %}
-  <div>
-    <h3 class="compact-bottom">{{ _('Often used with&hellip;')|safe }}</h3>
-    <ul class="addon-otheraddons">
-      {% for rec in recommendations %}
-      <li>
-      <a href="{{ url('addons.detail', addon_id=rec.id) }}?src=oftenusedwith"
-         class="addonitem">{{ rec.name }}</a>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
+    <div>
+      <h3 class="compact-bottom">{{ _('Often used with&hellip;')|safe }}</h3>
+      <ul class="addon-otheraddons">
+        {% for rec in recommendations %}
+        <li>
+        <a href="{{ url('addons.detail', addon_id=rec.id) }}?src=oftenusedwith"
+           class="addonitem">{{ rec.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
   {# /recommendations #}
 
@@ -419,28 +414,28 @@
     {% endif %}
 
     {% if user.is_authenticated() %}
-    {# TODO reverse URLs #}
-    <form action="{{ remora_url('/collections/addtocollection') }}"
-          method="post" id="coll_publish"
-          data-coll-url="{{ remora_url('/collections') }}">
-      <div>
-        <a href="{{ remora_url('/collections/') }}" class="what">
-          {{ _("What's this?", 'addons_display_a_license_what') }}</a>
-        <h3>
-          <label for="publish_to">{{ _('Add to a collection:') }}</label>
-        </h3>
-        {{ cake_csrf_token() }}
-        <input name="data[addon_id]" type="hidden" value="{{ addon.id }}"/>
-        <select name="data[collection_uuid]" id="publish_to">
-          <option value="" selected="selected">{{ _('Select a collection...') }}</option>
-          {% for collection in user_collections %}
-            <option value="{{ collection.uuid }}">{{ collection.name }}</option>
-          {% endfor %}
-          <option value="new">{{ _('New Collection...') }}</option>
-        </select>
-        <button>{{ _('Publish') }}</button>
-      </div>
-    </form>
+      {# TODO reverse URLs #}
+      <form action="{{ remora_url('/collections/addtocollection') }}"
+            method="post" id="coll_publish"
+            data-coll-url="{{ remora_url('/collections') }}">
+        <div>
+          <a href="{{ remora_url('/collections/') }}" class="what">
+            {{ _("What's this?", 'addons_display_a_license_what') }}</a>
+          <h3>
+            <label for="publish_to">{{ _('Add to a collection:') }}</label>
+          </h3>
+          {{ cake_csrf_token() }}
+          <input name="data[addon_id]" type="hidden" value="{{ addon.id }}"/>
+          <select name="data[collection_uuid]" id="publish_to">
+            <option value="" selected="selected">{{ _('Select a collection...') }}</option>
+            {% for collection in user_collections %}
+              <option value="{{ collection.uuid }}">{{ collection.name }}</option>
+            {% endfor %}
+            <option value="new">{{ _('New Collection...') }}</option>
+          </select>
+          <button>{{ _('Publish') }}</button>
+        </div>
+      </form>
     {% endif %}
   </div>
   {# /collections #}
