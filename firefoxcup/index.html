@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html xml:lang="en-US" lang="en-US" dir="ltr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Firefox Cup</title>
+	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.8.0r4/build/reset-fonts-grids/reset-fonts-grids.css">
+    <link rel="stylesheet" type="text/css" href="css/firefoxcup.css" />
+</head>
+
+<body>
+
+<script type="text/javascript">// <![CDATA[
+    // Add a class to the body tag to alternate promo features
+    var class_options = new Array( "default", "stumbleupon", "thunderbird", "reminderfox", "rockyourfirefox" );
+
+    if (Math.random) {
+        var choice = Math.floor(Math.random() * (class_options.length));
+
+        // Just in case javascript gets carried away...
+        choice = ( (choice < class_options.length)  && choice >= 0) ? choice : 0;
+
+		if (document.body.className == '') {
+			document.body.className = class_options[choice];
+		} else {
+			document.body.className += ' '+class_options[choice];
+		}
+    }
+// ]]></script>
+
+<div id="doc">
+
+<ul id="header">
+	<li><a href="http://www.mozilla.com/">Mozilla</a></li>
+	<li><a href="http://addons.mozilla.org/">Add-Ons</a></li>
+	<li><a href="http://support.mozilla.com/">Support</a></li>
+</ul>
+
+<div id="main-feature">
+    <h1><img src="img/logo.png" alt="Firefox Cup" /></h1>
+    <p>Install Personas to support your team and compete for the Firefox Cup.</p>
+	<div id="download">
+		<h3>Get Firefox</h3>
+		<p>Upgrade to Firefox 3.6 and experience the best of the Web and Firefox Cup.</p>
+		<p>Download...</p>
+	</div>
+</div>
+
+<div id="main-content">
+
+	<h2>Personas show your passion as your team plays for glory.</h2>
+
+</div>
+
+<div id="sidebar">
+
+    <div class="sub-feature" id="connected">
+        <h3>Stay Connected!</h3>
+        <ul class="link">
+            <li id="connect-twitter"><a href="http://twitter.com/firefox">Follow us on Twitter</a></li>
+            <li id="connect-facebook"><a href="http://www.facebook.com/Firefox">Become a Fan on Facebook</a></li>
+            <li id="connect-blog"><a href="http://blog.mozilla.com/">Read our Blog</a></li>
+        </ul>
+    </div>
+
+    <div class="sub-feature" id="featured">
+        <div id="default">
+            <h3>More Ways to Personalize</h3>
+            <p>Adapt Firefox to the way you browse with 1,000s of free add-ons.</p>
+            <ul class="link"><li><a href="https://addons.mozilla.org/en-US/firefox/">Explore Add-ons</a></li></ul>
+        </div>
+        <div id="featured-footiefox">
+            <h3>FootieFox</h3>
+            <p>Don't miss a moment of action. FootieFox shows latest scores in your Firefox.</p>
+            <ul class="link"><li><a href="#">Install FootieFox Add-on Now</a></li></ul>
+        </div>
+    </div>
+
+</div>
+
+
+    </div><!-- end #doc -->
+    </div><!-- end #wrapper -->
+
+
+</body>
+</html>
+
