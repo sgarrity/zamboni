@@ -5,13 +5,19 @@
     <title>Firefox Cup</title>
 	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.8.0r4/build/reset-fonts-grids/reset-fonts-grids.css">
     <link rel="stylesheet" type="text/css" href="css/firefoxcup.css" />
+	<script type="text/javascript" src="js/yahoo-dom-event.js"></script>
+	<script type="text/javascript" src="js/animation-min.js"></script>
+	<script type="text/javascript" src="js/mozilla-pager.js"></script>
+</head>
+
 </head>
 
 <body>
+<div id="wrapper">
 
 <script type="text/javascript">// <![CDATA[
     // Add a class to the body tag to alternate promo features
-    var class_options = new Array( "default", "stumbleupon", "thunderbird", "reminderfox", "rockyourfirefox" );
+    var class_options = new Array( "footiefox", "footiefox" );
 
     if (Math.random) {
         var choice = Math.floor(Math.random() * (class_options.length));
@@ -30,14 +36,14 @@
 <div id="doc">
 
 <ul id="header">
-	<li><a href="http://www.mozilla.com/">Mozilla</a></li>
+	<li class="first"><a href="http://www.mozilla.com/">Mozilla</a></li>
 	<li><a href="http://addons.mozilla.org/">Add-Ons</a></li>
 	<li><a href="http://support.mozilla.com/">Support</a></li>
 </ul>
 
 <div id="main-feature">
     <h1><img src="img/logo.png" alt="Firefox Cup" /></h1>
-    <p>Install Personas to support your team and compete for the Firefox Cup.</p>
+    <h2>Install Personas to support your team and compete for the Firefox Cup.</h2>
 	<div id="download">
 		<h3>Get Firefox</h3>
 		<p>Upgrade to Firefox 3.6 and experience the best of the Web and Firefox Cup.</p>
@@ -49,37 +55,71 @@
 
 	<h2>Personas show your passion as your team plays for glory.</h2>
 
+	<div id="personas" class="pager pager-with-tabs">
+
+		<div id="personas-header">
+			<h3>Roll over to try, click to apply</h3>
+			<ul id="personas-nav" class="pager-tabs">
+				<li><a href="#p1">1</a></li>
+				<li><a href="#p2">2</a></li>
+				<li><a href="#p3">3</a></li>
+			</ul>
+		</div>
+
+		<div class="pager-content">
+
+			<div class="personas-contents default-page" id="feature-p1">
+				<script type="text/javascript">// <![CDATA[
+				document.getElementById('feature-p1').id = 'page-feature-p1';
+				// ]]></script>
+				<p>Page 1</p>
+			</div>
+
+			<div class="personas-contents" id="feature-p2">
+				<script type="text/javascript">// <![CDATA[
+				document.getElementById('feature-p2').id = 'page-feature-p2';
+				// ]]></script>
+				<p>Page 2</p>
+			</div>
+
+			<div class="personas-contents" id="feature-p3">
+				<script type="text/javascript">// <![CDATA[
+				document.getElementById('feature-p3').id = 'page-feature-p3';
+				// ]]></script>
+				<p>Page 3</p>
+			</div>
+
+		</div>
+
+	</div>
+
 </div>
 
 <div id="sidebar">
 
-    <div class="sub-feature" id="connected">
-        <h3>Stay Connected!</h3>
-        <ul class="link">
-            <li id="connect-twitter"><a href="http://twitter.com/firefox">Follow us on Twitter</a></li>
-            <li id="connect-facebook"><a href="http://www.facebook.com/Firefox">Become a Fan on Facebook</a></li>
-            <li id="connect-blog"><a href="http://blog.mozilla.com/">Read our Blog</a></li>
-        </ul>
+    <div class="sub-feature" id="email">
+        <h3>Sign Up!</h3>
+		<p>Stay current with Firefox Cup news by email.</p>
     </div>
 
     <div class="sub-feature" id="featured">
-        <div id="default">
-            <h3>More Ways to Personalize</h3>
-            <p>Adapt Firefox to the way you browse with 1,000s of free add-ons.</p>
-            <ul class="link"><li><a href="https://addons.mozilla.org/en-US/firefox/">Explore Add-ons</a></li></ul>
-        </div>
         <div id="featured-footiefox">
             <h3>FootieFox</h3>
-            <p>Don't miss a moment of action. FootieFox shows latest scores in your Firefox.</p>
+            <p>Don’t miss a moment of action. FootieFox shows latest scores in your Firefox.</p>
             <ul class="link"><li><a href="#">Install FootieFox Add-on Now</a></li></ul>
         </div>
+    </div>
+
+    <div class="sub-feature" id="facebook">
+        <h3>Stay Connected!</h3>
+		<p>Become a Fan</p>
     </div>
 
 </div>
 
 
-    </div><!-- end #doc -->
-    </div><!-- end #wrapper -->
+</div><!-- end #doc -->
+</div><!-- end #wrapper -->
 
 
 </body>
