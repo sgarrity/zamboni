@@ -157,8 +157,11 @@ body {
 	border-left: 0;
 }
 
-.personas-list {
+.pager-content {
 	clear: both;
+}
+
+.personas-list {
 	padding: 20px 0;
 }
 
