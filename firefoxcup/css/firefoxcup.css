@@ -360,7 +360,7 @@ ul.personas-list {
 }
 
 #tweets thead th {
-	background-color: #d6ebd6;
+	background-color: #58cf50;
 	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, rgb(95,219,87)), color-stop(1, rgb(82,196,74)));
 	background-image: -moz-linear-gradient(center top, rgb(95,219,87) 0%, rgb(82,196,74) 100%);
 	color: #fff;
