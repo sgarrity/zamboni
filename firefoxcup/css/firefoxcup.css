@@ -159,10 +159,10 @@ body {
 
 .pager-content {
 	clear: both;
+	padding: 20px 0 0 0;
 }
 
-.personas-list {
-	padding: 20px 0;
+ul.personas-list {
 }
 
 .personas-list li {
@@ -179,7 +179,6 @@ body {
 #personas p {
 	margin-left: 5px;
 	padding: 20px 0;
-	clear: left;
 }
 
 /* }}} */
