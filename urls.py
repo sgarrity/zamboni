@@ -69,7 +69,10 @@ urlpatterns = patterns('',
 
     # Redirect persona/xxx
     ('^persona/(\d+)',
-     lambda r, id: redirect('addons.detail', id, permanent=True))
+     lambda r, id: redirect('addons.detail', id, permanent=True)),
+
+    # Firefox Cup page, /firefoxcup
+    ('^firefoxcup/', include('firefoxcup.urls'))
 )
 
 if settings.DEBUG:

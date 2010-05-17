@@ -205,6 +205,7 @@ INSTALLED_APPS = (
     'discovery',
     'editors',
     'files',
+    'firefoxcup',
     'jingo_minify',
     'nick',
     'pages',
