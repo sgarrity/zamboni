@@ -10,10 +10,13 @@ from tower import ugettext as _
 import amo
 from amo.helpers import urlparams
 from amo import urlresolvers
+from addons.models import Category
 from versions.compare import dict_from_int
 from search import forms
-from search.client import Client as SearchClient, SearchError
-from search.forms import SearchForm
+from search.client import (Client as SearchClient, SearchError,
+                           CollectionsClient, PersonasClient)
+from search.forms import SearchForm, SecondarySearchForm
+from translations.query import order_by_translation
 
 DEFAULT_NUM_RESULTS = 20
 
@@ -35,6 +38,7 @@ def _get_versions(request, versions, version):
     compats.append(c)
     seen = {}
     exclude = request.APP.__dict__.get('exclude_versions', [])
+    versions.sort(reverse=True)
 
     for v in versions:
         # v is a version_int so we can get the major and minor:
@@ -47,7 +51,7 @@ def _get_versions(request, versions, version):
 
         seen[text] = 1
 
-        if v_float <= request.APP.min_display_version or v_float in exclude:
+        if v_float < request.APP.min_display_version or v_float in exclude:
             continue
 
         c = MenuItem()
@@ -57,6 +61,7 @@ def _get_versions(request, versions, version):
         if c.text == version:
             c.selected = True
         compats.append(c)
+
     return compats
 
 
@@ -144,12 +149,76 @@ def _get_sorts(request, sort):
     return items
 
 
+def _personas(request):
+    "Handle the request for persona searches."
+    form = SecondarySearchForm(request.GET)
+    form.is_valid()
+
+    query = form.cleaned_data.get('q', '')
+
+    search_opts = {}
+    search_opts['limit'] = form.cleaned_data.get('pp', DEFAULT_NUM_RESULTS)
+    page = form.cleaned_data.get('page') or 1
+    search_opts['offset'] = (page - 1) * search_opts['limit']
+
+    client = PersonasClient()
+
+    q = Category.objects.filter(application=request.APP.id,
+                                type=amo.ADDON_PERSONA)
+    categories = order_by_translation(q, 'name')
+
+    try:
+        results = client.query(query, **search_opts)
+    except SearchError, e:
+        return jingo.render(request, 'search/down.html', {}, status=503)
+
+    pager = amo.utils.paginate(request, results, search_opts['limit'])
+
+    c = {
+            'pager': pager,
+            'form': form,
+            'categories': categories,
+        }
+
+    return jingo.render(request, 'search/personas.html', c)
+
+
+def _collections(request):
+    """Handle the request for collections."""
+
+    form = SecondarySearchForm(request.GET)
+    form.is_valid()
+
+    query = form.cleaned_data.get('q', '')
+
+    search_opts = {}
+    search_opts['limit'] = form.cleaned_data.get('pp', DEFAULT_NUM_RESULTS)
+    page = form.cleaned_data.get('page') or 1
+    search_opts['offset'] = (page - 1) * search_opts['limit']
+    search_opts['sort'] = form.cleaned_data.get('sortby')
+
+    client = CollectionsClient()
+
+    try:
+        results = client.query(query, **search_opts)
+    except SearchError, e:
+        return jingo.render(request, 'search/down.html', {}, status=503)
+
+    pager = amo.utils.paginate(request, results, search_opts['limit'])
+
+    c = {
+            'pager': pager,
+            'form': form,
+        }
+
+    return jingo.render(request, 'search/collections.html', c)
+
+
 def search(request):
     title = _('Search Add-ons')
 
     # If the form is invalid we still want to have a query.
     query = request.REQUEST.get('q', '')
-
 
     search_opts = {
             'meta': ('versions', 'categories', 'tags'),
@@ -159,6 +228,24 @@ def search(request):
     form = SearchForm(request)
     form.is_valid()  # Let the form try to clean data.
 
+    # TODO(davedash): remove this feature when we remove Application for
+    # the search advanced form
+    # Redirect if appid != request.APP.id
+
+    appid = form.cleaned_data['appid']
+
+    if request.APP.id != appid:
+        new_app =  amo.APP_IDS.get(appid)
+        return HttpResponseRedirect(
+                urlresolvers.get_app_redirect(new_app))
+
+    category = form.cleaned_data.get('cat')
+
+    if category == 'collections':
+        return _collections(request)
+    elif category == 'personas':
+        return _personas(request)
+
     # TODO: Let's change the form values to something less gross when
     # Remora dies in a fire.
     query = form.cleaned_data['q']
@@ -166,18 +253,7 @@ def search(request):
     if query:
         title = _('Search for %s' % query)
 
-    appid = form.cleaned_data['appid']
-
-    # TODO(davedash): remove this feature when we remove Application for
-    # the search advanced form
-    # Redirect if appid != request.APP.id
-    if request.APP.id != appid:
-        new_app =  amo.APP_IDS.get(appid)
-        return HttpResponseRedirect(
-                urlresolvers.get_app_redirect(new_app))
-
     addon_type = form.cleaned_data.get('atype', 0)
-    category = form.cleaned_data.get('cat')
     tag = form.cleaned_data.get('tag')
     page = form.cleaned_data['page']
     last_updated = form.cleaned_data.get('lup')

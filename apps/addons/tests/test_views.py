@@ -24,12 +24,6 @@ class TestHomepage(test_utils.TestCase):
         super(TestHomepage, self).setUp()
         self.base_url = reverse('home')
 
-    def test_thunderbird(self):
-        """Thunderbird homepage should have the Thunderbird title."""
-        r = self.client.get('/en-US/thunderbird/')
-        doc = pq(r.content)
-        eq_('Add-ons for Thunderbird', doc('title').text())
-
     def test_promo_box_public_addons(self):
         """Only public add-ons in the promobox."""
         r = self.client.get(self.base_url, follow=True)
@@ -47,6 +41,12 @@ class TestHomepage(test_utils.TestCase):
         r = self.client.get(self.base_url, follow=True)
         doc = pq(r.content)
         eq_(doc('.lead a')[0].text, 'WebDev')
+
+    def test_thunderbird(self):
+        """Thunderbird homepage should have the Thunderbird title."""
+        r = self.client.get('/en-US/thunderbird/')
+        doc = pq(r.content)
+        eq_('Add-ons for Thunderbird', doc('title').text())
 
     def test_default_feature(self):
         response = self.client.get(self.base_url, follow=True)
@@ -85,8 +85,18 @@ class TestHomepage(test_utils.TestCase):
         assert s.strip().startswith('Added'), s
 
 
+class TestPromobox(test_utils.TestCase):
+    fixtures = ['addons/ptbr-promobox']
+
+    def test_promo_box_ptbr(self):
+        # bug 564355, we were trying to match pt-BR and pt-br
+        response = self.client.get('/pt-BR/firefox/', follow=True)
+        eq_(response.status_code, 200)
+
+
 class TestDetailPage(test_utils.TestCase):
-    fixtures = ['base/fixtures', 'addons/listed', 'addons/persona']
+    fixtures = ['base/fixtures', 'base/addon_59.json', 'addons/listed',
+                'addons/persona']
 
     def test_anonymous_user(self):
         """Does the page work for an anonymous user?"""
@@ -275,24 +285,47 @@ class TestDetailPage(test_utils.TestCase):
                  in doc('#addons-author-addons-select option')
                  if a.attrib['value'] == '8680']), 0)
 
+        # Test "other addons" redirect functionality with valid and
+        # invalid input.
+        forward_to = lambda input: self.client.get(reverse(
+            'addons.detail', args=[8680]), {
+                'addons-author-addons-select': input})
+        # Valid input.
+        response = forward_to('3615')
+        eq_(response.status_code, 301)
+        assert response['Location'].find('3615') > 0
+        # Textual input.
+        response = forward_to('abc')
+        eq_(response.status_code, 400)
+        # Unicode input.
+        response = forward_to(u'\u271D')
+        eq_(response.status_code, 400)
+
+
     def test_details_collections_dropdown(self):
 
         request = Mock()
         request.APP.id = 1
+        request.user.is_authenticated = lambda: True
 
-        profile = Mock()
-        profile.id = 10482
+        request.amo_user.id = 10482
 
         addon = Mock()
         addon.id = 4048
 
-        ret = _details_collections_dropdown(request, profile, addon)
+        ret = _details_collections_dropdown(request, addon)
         eq_(len(ret), 2)
 
         # Add-on exists in one of the collections
         addon.id = 433
-        ret = _details_collections_dropdown(request, profile, addon)
+        ret = _details_collections_dropdown(request, addon)
         eq_(len(ret), 1)
+
+        request.user.is_authenticated = lambda: False
+        request.amo_user.id = None
+
+        ret = _details_collections_dropdown(request, addon)
+        eq_(len(ret), 0)
 
     def test_remove_tag_button(self):
         self.client.login(username='regular@mozilla.com', password='password')
@@ -307,6 +340,19 @@ class TestDetailPage(test_utils.TestCase):
         doc = pq(r.content)
         href = doc('#review-box a[href*="reviews/add"]').attr('href')
         assert href.endswith('/reviews/add/3615'), href
+
+    def test_no_listed_authors(self):
+        r = self.client.get(reverse('addons.detail', args=[59]))
+        # We shouldn't show an avatar since this has no listed_authors.
+        doc = pq(r.content)
+        eq_(0, len(doc('.avatar')))
+
+    def test_collection_detal_url(self):
+        self.client.login(username='regular@mozilla.com', password='password')
+        r = self.client.get(reverse('addons.detail', args=[3615]))
+        url = pq(r.content)('[data-detail-url]').attr('data-detail-url')
+        eq_(url, '/en-US/firefox/collection/')
+    test_collection_detal_url.xxx = 3
 
 
 class TestTagsBox(test_utils.TestCase):

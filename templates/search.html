@@ -16,7 +16,7 @@
             {% set class = '' %}
           {% endif %}
           <option class="{{ class }}" value="{{ value }}"
-                  {{ value|ifeq(search_form.cat.data, 'selected') }}>
+            {% if value in (search_form.cat.data, search_cat) %}selected{% endif %}>
             {{ title }}</option>
         {%- endfor %}
       </select>
@@ -29,10 +29,6 @@
     </div>
     <div id="advanced-search" class="advanced">
       <fieldset class="important">
-        <div class="container application">
-          {{ search_form.appid.label_tag()|safe }}
-          {{ search_form.appid|safe }}
-        </div>
         <div class="container">
           {{ search_form.lver.label_tag()|safe }}
           {{ search_form.lver|safe }}
@@ -61,10 +57,7 @@
         </div>
       </fieldset>
       <span id="search-data"
-        data-version="{{ request.REQUEST.get('lver', 'any') }}"
-        {% cache search_form.queryset %}
-          data-appversions="{{ search_form.get_app_versions()|json }}">
-        {% endcache %}
+        data-version="{{ request.REQUEST.get('lver', 'any') }}">
       </span>
       {{ search_form.advanced|safe }}
     </div> {# advanced-search #}

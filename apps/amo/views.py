@@ -1,3 +1,5 @@
+import logging
+import random
 import socket
 import urllib2
 
@@ -10,8 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 import jingo
 import phpserialize as php
 
+from amo.urlresolvers import reverse
+from api.views import render_xml
 from stats.models import Contribution, ContributionError, SubscriptionEvent
 from . import log
+
+paypal_log = logging.getLogger('z.paypal')
 
 
 @never_cache
@@ -73,16 +79,46 @@ def paypal(request):
     https://cms.paypal.com/us/cgi-bin/?cmd=_render-content
                     &content_ID=developer/e_howto_html_IPNandPDTVariables
     """
+    try:
+        return _paypal(request)
+    except Exception, e:
+        paypal_log.error('%s\n%s' % (e, request))
+        return http.HttpResponseServerError('Unknown error.')
+
+
+def _paypal(request):
+
+    def _log_error_with_data(msg, request):
+        """Log a message along with some of the POST info from PayPal."""
+
+        id = random.randint(0, 99999999)
+        msg = "[%s] %s (dumping data)" % (id, msg)
+
+        paypal_log.error(msg)
+
+        logme = {'txn_id': request.POST.get('txn_id'),
+                 'txn_type': request.POST.get('txn_type'),
+                 'payer_email': request.POST.get('payer_email'),
+                 'receiver_email': request.POST.get('receiver_email'),
+                 'payment_status': request.POST.get('payment_status'),
+                 'payment_type': request.POST.get('payment_type'),
+                 'mc_gross': request.POST.get('mc_gross'),
+                 'item_number': request.POST.get('item_number'),
+                }
+
+        paypal_log.error("[%s] PayPal Data: %s" % (id, logme))
+
     if request.method != 'POST':
         return http.HttpResponseNotAllowed(['POST'])
 
     # Check that the request is valid and coming from PayPal.
-    data = request.POST.copy()
-    data['cmd'] = '_notify-validate'
-    pr = urllib2.urlopen(settings.PAYPAL_CGI_URL,
-                         data.urlencode(), 20).readline()
-    if pr != 'VERIFIED':
-        log.error("Expecting 'VERIFIED' from PayPal, got '%s'.  Failing." % pr)
+    data = '%s&%s' % ('cmd=_notify-validate', request.raw_post_data)
+    paypal_response = urllib2.urlopen(settings.PAYPAL_CGI_URL,
+                                      data, 20).readline()
+    if paypal_response != 'VERIFIED':
+        msg = ("Expecting 'VERIFIED' from PayPal, got '%s'. "
+               "Failing." % paypal_response)
+        _log_error_with_data(msg, request)
         return http.HttpResponseForbidden('Invalid confirmation')
 
     if request.POST.get('txn_type', '').startswith('subscr_'):
@@ -100,22 +136,18 @@ def paypal(request):
 
     # Fetch and update the contribution - item_number is the uuid we created.
     try:
-        c = Contribution.objects.no_cache().get(
-                                            uuid=request.POST['item_number'])
+        c = Contribution.objects.get(uuid=request.POST['item_number'])
     except Contribution.DoesNotExist:
         key = "%s%s:%s" % (settings.CACHE_PREFIX, 'contrib',
                            request.POST['item_number'])
         count = cache.get(key, 0) + 1
 
-        log.warning('Contribution (uuid=%s) not found for IPN request #%s.'
-                     % (request.POST['item_number'], count))
+        paypal_log.warning('Contribution (uuid=%s) not found for IPN request '
+                           '#%s.' % (request.POST['item_number'], count))
         if count > 10:
-            logme = (request.POST['txn_id'], request.POST['payer_email'],
-                     request.POST['receiver_email'], request.POST['mc_gross'])
-            log.error("Paypal sent a transaction that we don't know about and "
-                      "we're giving up on it! (TxnID={d[txn_id]}; "
-                      "From={d[payer_email]}; To={d[receiver_email]}; "
-                      "Amount={d[mc_gross]})".format(d=request.POST))
+            msg = ("Paypal sent a transaction that we don't know "
+                   "about and we're giving up on it.")
+            _log_error_with_data(msg, request)
             cache.delete(key)
             return http.HttpResponse('Transaction not found; skipping.')
         cache.set(key, count, 1209600)  # This is 2 weeks.
@@ -132,7 +164,7 @@ def paypal(request):
         c.mail_thankyou(request)
     except ContributionError as e:
         # A failed thankyou email is not a show stopper, but is good to know.
-        log.error('Thankyou note email failed with error: %s' % e)
+        paypal_log.error('Thankyou note email failed with error: %s' % e)
 
     return http.HttpResponse('Success!')
 
@@ -143,3 +175,8 @@ def handler404(request):
 
 def handler500(request):
     return jingo.render(request, 'amo/500.lhtml', status=500)
+
+
+def loaded(request):
+    return http.HttpResponse('%s' % request.META['wsgi.loaded'],
+                             content_type='text/plain')

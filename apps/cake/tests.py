@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
+from django.db import IntegrityError
 
-from mock import Mock
+from mock import Mock, patch
 from nose.tools import eq_
 from test_utils import TestCase
 from pyquery import PyQuery as pq
@@ -15,7 +16,7 @@ from .helpers import cake_csrf_token, remora_url
 
 class CakeTestCase(TestCase):
 
-    fixtures = ['cake/sessions.json', 'base/global-stats']
+    fixtures = ['cake/sessions', 'base/global-stats']
 
     def test_login(self):
         """
@@ -89,10 +90,28 @@ class CakeTestCase(TestCase):
         assert isinstance(response.context['user'], AnonymousUser)
         self.assertEqual(client.cookies.get('AMOv3').value, '')
 
+    @patch('django.db.models.fields.related.'
+           'ReverseSingleRelatedObjectDescriptor.__get__')
+    def test_backend_profile_exceptions(self, p_mock):
+        # We have a legitimate profile, but for some reason the user_id is phony
+        s = SessionBackend()
+        backend = SessionBackend()
+        session = Session.objects.get(pk='17f051c99f083244bf653d5798111216')
+
+        p_mock.side_effect = User.DoesNotExist()
+        eq_(None, s.authenticate(session))
+
+        p_mock.side_effect = IntegrityError()
+        eq_(None, s.authenticate(session))
+
+        p_mock.side_effect = Exception()
+        eq_(None, s.authenticate(session))
+
+
 
 class TestHelpers(TestCase):
 
-    fixtures = ['cake/sessions.json']
+    fixtures = ['cake/sessions']
 
     def test_csrf_token(self):
         mysessionid = "17f051c99f083244bf653d5798111216"
@@ -144,6 +163,6 @@ class TestHelpers(TestCase):
         url = remora_url(ctx, u'/tags/Hallo und tschüß')
         eq_(url, '/en-US/firefox/tags/Hallo%20und%20tsch%C3%BC%C3%9F')
 
-        # correct escaping
-        url = remora_url(ctx, u'/browse/type:1/cat:all?sort=popular')
-        eq_(url, '/en-US/firefox/browse/type%3A1/cat%3Aall?sort=popular')
+        # Trailing slashes are kept if present.
+        eq_(remora_url(ctx, '/foo'), '/en-US/firefox/foo')
+        eq_(remora_url(ctx, '/foo/'), '/en-US/firefox/foo/')

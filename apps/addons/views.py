@@ -1,7 +1,7 @@
 from django import http
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django.utils import translation
+from django.utils.translation import trans_real as translation
 
 import jingo
 from tower import ugettext_lazy as _lazy
@@ -11,7 +11,6 @@ from amo.utils import sorted_groupby
 from amo import urlresolvers
 from amo.urlresolvers import reverse
 from bandwagon.models import Collection, CollectionFeature, CollectionPromo
-from users.models import UserProfile
 from stats.models import GlobalStat
 from tags.models import Tag
 from .models import Addon
@@ -20,12 +19,15 @@ from .models import Addon
 def author_addon_clicked(f):
     """Decorator redirecting clicks on "Other add-ons by author"."""
     def decorated(request, *args, **kwargs):
+        redirect_id = request.GET.get('addons-author-addons-select', None)
+        if not redirect_id:
+            return f(request, *args, **kwargs)
         try:
-            target_id = int(request.GET.get('addons-author-addons-select'))
+            target_id = int(redirect_id)
             return http.HttpResponsePermanentRedirect(reverse(
                 'addons.detail', args=[target_id]))
-        except TypeError:
-            return f(request, *args, **kwargs)
+        except ValueError:
+            return http.HttpResponseBadRequest('Invalid add-on ID.')
     return decorated
 
 
@@ -103,12 +105,7 @@ def extension_detail(request, addon):
     popular_coll = collections.order_by('-subscribers')[:coll_show_count]
 
     # this user's collections
-    if request.user.is_authenticated():
-        profile = UserProfile.objects.get(user=request.user)
-        user_collections = _details_collections_dropdown(request,
-                                                        profile, addon)
-    else:
-        user_collections = []
+    user_collections = _details_collections_dropdown(request, addon)
 
     data = {
         'addon': addon,
@@ -129,7 +126,7 @@ def extension_detail(request, addon):
     return jingo.render(request, 'addons/details.html', data)
 
 
-def _details_collections_dropdown(request, profile, addon):
+def _details_collections_dropdown(request, addon):
     """Returns the collections which should be shown on an add-on details
         page for a logged in user. This is used in the "Add to a collection..."
         dropdown.  Rules to be in this list:
@@ -146,6 +143,10 @@ def _details_collections_dropdown(request, profile, addon):
             Q(collectionuser__role=amo.COLLECTION_ROLE_PUBLISHER),
             application__id=request.APP.id)
     """
+    if request.user.is_authenticated():
+        profile = request.amo_user
+    else:
+        return []
 
     sql = """
             SELECT DISTINCT
@@ -304,7 +305,7 @@ class CollectionPromoBox(object):
 
     def collections(self):
         features = self.features()
-        lang = translation.get_language()
+        lang = translation.to_language(translation.get_language())
         locale = Q(locale='') | Q(locale=lang)
         promos = (CollectionPromo.objects.filter(locale)
                   .filter(collection_feature__in=features)
@@ -314,9 +315,9 @@ class CollectionPromoBox(object):
         # We key by feature_id and locale, so we can favor locale specific
         # promos.
         promo_dict = {}
-        for k, v in groups:
+        for feature_id, v in groups:
             promo = v.next()
-            key = (k, promo.locale)
+            key = (feature_id, translation.to_language(promo.locale))
             promo_dict[key] = promo
 
         rv = {}

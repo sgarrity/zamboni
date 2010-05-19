@@ -4,16 +4,31 @@ import urllib
 from django import http, test
 from django.conf import settings
 from django.core.cache import cache, parse_backend_uri
-from amo.urlresolvers import reverse
 
+import commonware.log
+from lxml import etree
 from mock import patch, Mock
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 import test_utils
 
+from amo.urlresolvers import reverse
 from amo.pyquery_wrapper import PyQuery
 from stats.models import SubscriptionEvent
+
+
+URL_ENCODED = 'application/x-www-form-urlencoded'
+
+
+class Client(test.Client):
+    """Test client that uses form-urlencoded (like browsers)."""
+
+    def post(self, url, data={}, **kw):
+        if hasattr(data, 'items'):
+            data = urllib.urlencode(data)
+            kw['content_type'] = URL_ENCODED
+        return super(Client, self).post(url, data, **kw)
 
 
 def test_404_no_app():
@@ -22,6 +37,16 @@ def test_404_no_app():
     url = reverse('amo.monitor')
     response = test.Client().get(url + 'nonsense')
     eq_(response.status_code, 404)
+
+
+def test_404_app_links():
+    response = test.Client().get('/en-US/thunderbird/xxxxxxx')
+    eq_(response.status_code, 404)
+    links = pq(response.content)('[role=main] ul li a:not([href^=mailto])')
+    eq_(len(links), 4)
+    for link in links:
+        href = link.attrib['href']
+        assert href.startswith('/en-US/thunderbird'), href
 
 
 class TestStuff(test_utils.TestCase):
@@ -114,6 +139,7 @@ class TestPaypal(test_utils.TestCase):
     def setUp(self):
         self.url = reverse('amo.paypal')
         self.item = 1234567890
+        self.client = Client()
 
     def urlopener(self, status):
         m = Mock()
@@ -167,6 +193,23 @@ class TestPaypal(test_utils.TestCase):
         assert isinstance(response, http.HttpResponse)
         eq_(cache.get(key), None)
 
+    @patch('amo.views.urllib2.urlopen')
+    def test_query_string_order(self, urlopen):
+        urlopen.return_value = self.urlopener('HEY MISTER')
+        query = 'x=x&a=a&y=y'
+        response = self.client.post(self.url, data=query,
+                                    content_type=URL_ENCODED)
+        eq_(response.status_code, 403)
+        _, path, _ = urlopen.call_args[0]
+        eq_(path, 'cmd=_notify-validate&%s' % query)
+
+    @patch('amo.views.urllib2.urlopen')
+    def test_any_exception(self, urlopen):
+        urlopen.side_effect = Exception()
+        response = self.client.post(self.url, {})
+        eq_(response.status_code, 500)
+        eq_(response.content, 'Unknown error.')
+
 
 def test_jsi18n_caching():
     """The jsi18n catalog should be cached for a long time."""
@@ -180,3 +223,30 @@ def test_jsi18n_caching():
     fmt = '%a, %d %b %Y %H:%M:%S GMT'
     expires = datetime.strptime(response['Expires'], fmt)
     assert (expires - datetime.now()).days >= 365
+
+
+def test_dictionaries_link():
+    doc = pq(test.Client().get('/', follow=True).content)
+    # This just failed because you dropped the remora url.
+    link = doc('#categoriesdropdown a[href$="type:3"]')
+    eq_(link.text(), 'Dictionaries & Language Packs')
+
+
+def test_remote_addr():
+    """Make sure we're setting REMOTE_ADDR from X_FORWARDED_FOR."""
+    client = test.Client()
+    # Send X-Forwarded-For as it shows up in a wsgi request.
+    response = client.get('/en-US/firefox/', follow=True,
+                          HTTP_X_FORWARDED_FOR='oh yeah')
+    eq_(commonware.log.get_remote_addr(), 'oh yeah')
+
+def test_opensearch():
+    client = test.Client()
+    page = client.get('/en-US/firefox/opensearch.xml')
+
+    wanted = ('Content-Type', 'text/xml')
+    eq_(page._headers['content-type'], wanted)
+
+    doc = etree.fromstring(page.content)
+    e = doc.find("{http://a9.com/-/spec/opensearch/1.1/}ShortName")
+    eq_(e.text, "Firefox Add-ons")

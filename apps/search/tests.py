@@ -1,6 +1,4 @@
-"""
-Tests for the search (sphinx) app.
-"""
+"""Tests for the search (sphinx) app."""
 import os
 import shutil
 import socket
@@ -10,6 +8,7 @@ import urllib
 from django.test import TestCase, client
 from django.utils import translation
 
+import jingo
 import mock
 from nose import SkipTest
 from nose.tools import eq_, assert_raises
@@ -23,8 +22,9 @@ from amo.tests.test_helpers import render
 from manage import settings
 from search import forms, views
 from search.utils import start_sphinx, stop_sphinx, reindex, convert_version
-from search.client import (Client as SearchClient, SearchError,
-                           get_category_id, extract_from_query)
+from search.client import (Client as SearchClient, CollectionsClient,
+                           PersonasClient, SearchError, get_category_id,
+                           extract_from_query)
 from addons.models import Addon, Category
 from tags.models import Tag
 
@@ -69,7 +69,7 @@ def test_parse_bad_type():
     c = client.Client()
     try:
         c.get("/en-US/firefox/api/1.2/search/firebug%20type:dict")
-    except KeyError:
+    except KeyError:  # pragma: no cover
         assert False, ("We should not throw a KeyError just because we had a "
                        "nonexistent addon type.")
 
@@ -87,7 +87,8 @@ class SphinxTestCase(test_utils.TransactionTestCase):
     def setUp(self):
         super(SphinxTestCase, self).setUp()
         if not SphinxTestCase.sphinx_is_running:
-            if not settings.SPHINX_SEARCHD or not settings.SPHINX_INDEXER:
+            if (not settings.SPHINX_SEARCHD or
+                not settings.SPHINX_INDEXER):  # pragma: no cover
                 raise SkipTest()
 
             os.environ['DJANGO_ENVIRONMENT'] = 'test'
@@ -120,22 +121,35 @@ class GetCategoryIdTest(TestCase):
 
 
 query = lambda *args, **kwargs: SearchClient().query(*args, **kwargs)
-
+cquery = lambda *args, **kwargs: CollectionsClient().query(*args, **kwargs)
+pquery = lambda *args, **kwargs: PersonasClient().query(*args, **kwargs)
 
 @mock.patch('search.client.sphinx.SphinxClient')
 def test_sphinx_timeout(sphinx_mock):
-    def sphinx_error(cls):
+    def sphinx_error(cls):  # pragma: no cover
         raise cls
 
     sphinx_mock._filters = []
     sphinx_mock._limit = 10
     sphinx_mock._offset = 0
     sphinx_mock.return_value = sphinx_mock
-    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(socket.timeout)
+    sphinx_mock.RunQueries.side_effect = lambda *a: sphinx_error(socket.timeout)
     assert_raises(SearchError, query, 'xxx')
 
-    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(Exception)
+    sphinx_mock.RunQueries.side_effect = lambda *a: sphinx_error(Exception)
     assert_raises(SearchError, query, 'xxx')
+
+    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(socket.timeout)
+    assert_raises(SearchError, pquery, 'xxx')
+
+    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(Exception)
+    assert_raises(SearchError, pquery, 'xxx')
+
+    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(socket.timeout)
+    assert_raises(SearchError, cquery, 'xxx')
+
+    sphinx_mock.Query.side_effect = lambda *a: sphinx_error(Exception)
+    assert_raises(SearchError, cquery, 'xxx')
 
 
 class BadSortOptionTest(TestCase):
@@ -157,6 +171,37 @@ class SearchDownTest(TestCase):
         resp = self.client.get(reverse('search.search'))
         doc = pq(resp.content)
         eq_(doc('.no-results').length, 1)
+
+    def test_collections_search_down(self):
+        self.client.get('/')
+        resp = self.client.get(reverse('search.search') + '?cat=collections')
+        doc = pq(resp.content)
+        eq_(doc('.no-results').length, 1)
+
+    def test_personas_search_down(self):
+        self.client.get('/')
+        resp = self.client.get(reverse('search.search') + '?cat=personas')
+        doc = pq(resp.content)
+        eq_(doc('.no-results').length, 1)
+
+
+class CollectionsSearchTest(SphinxTestCase):
+
+    def test_query(self):
+        r = cquery("")
+        assert r.total > 0
+
+    def test_sort_good(self):
+        r = cquery("", sort='weekly')
+        weekly = [c.weekly_subscribers for c in r]
+        eq_(weekly, sorted(weekly, reverse=True))
+
+    def test_sort_bad(self):
+        assert_raises(SearchError, cquery, '', sort='fffuuu')
+
+    def test_zero_results(self):
+        r = query("ffffffffffffffffffffuuuuuuuuuuuuuuuuuuuu")
+        eq_(r, [])
 
 
 class SearchTest(SphinxTestCase):
@@ -247,16 +292,43 @@ class SearchTest(SphinxTestCase):
         eq_(query("MozEx",
                   status=[amo.STATUS_PUBLIC, amo.STATUS_UNREVIEWED])[0].id, 40)
 
-    def test_badchars(self):
+    def test_bad_chars(self):
         """ Sphinx doesn't like queries that are entirely '$', '^' or '^ $' """
         bad_guys = ('^', '$', '$ ^', '^ s $', '$s^', '  $ s  ^', ' ^  s  $',
-                    '^$', '^    $')
+                    '^$', '^    $', '||facebook.com^$third-party')
 
         for guy in bad_guys:
             try:
-                query(guy)
-            except SearchError:
+                query(guy, meta=('versions',))
+            except SearchError:  # pragma: no cover
                 assert False, "Error querying for %s" % guy
+
+
+def test_form_version_label():
+    for app in amo.APP_USAGE:
+        r = client.Client().get('/en-US/{0}/'.format(app.short))
+        doc = pq(r.content)
+        eq_(doc('#advanced-search label')[0].text,
+                '%s Version' % unicode(app.pretty))
+
+
+class PersonaSearchTest(SphinxTestCase):
+    fixtures = ['addons/persona']
+
+    def get_response(self, **kwargs):
+        return self.client.get(reverse('search.search') +
+                               '?' + urllib.urlencode(kwargs))
+
+    def test_default_personas_query(self):
+        r = self.get_response(cat='personas')
+        doc = pq(r.content)
+        eq_(doc('title').text(),
+                'Personas Search Results :: Add-ons for Firefox')
+        eq_(len(doc('.secondary .categories h3')), 1)
+        eq_(doc('.primary h3').text(), '1 Persona')
+        eq_(len(doc('.persona-preview')), 1 )
+        eq_(doc('.thumbnails h4').text(), 'My Persona')
+        eq_(doc('.thumbnails em').text(), '55 active daily users')
 
 
 class FrontendSearchTest(SphinxTestCase):
@@ -270,6 +342,12 @@ class FrontendSearchTest(SphinxTestCase):
         return self.client.get(reverse('search.search') +
                                '?' + urllib.urlencode(kwargs))
 
+    def test_xss(self):
+        """Inputs should be escaped so people don't XSS."""
+        r = self.get_response(q='><strong>My Balls</strong>')
+        doc = pq(r.content)
+        eq_(len([1 for a in doc('strong') if a.text == 'My Balls']), 0)
+
     def test_default_query(self):
         """
         Verify some expected things on a query for nothing.
@@ -278,7 +356,7 @@ class FrontendSearchTest(SphinxTestCase):
         doc = pq(resp.content)
         num_actual_results = len(Addon.objects.filter(
             versions__apps__application=amo.FIREFOX.id,
-            versions__files__gt=0, versions__files__platform=1))
+            versions__files__gt=0))
         # Verify that we have the expected number of results.
         eq_(doc('.item').length, num_actual_results)
 
@@ -288,6 +366,12 @@ class FrontendSearchTest(SphinxTestCase):
 
         # Verify that we have the Refine Results.
         eq_(doc('.secondary .highlight h3').length, 1)
+
+    def test_default_collections_query(self):
+        r = self.get_response(cat='collections')
+        doc = pq(r.content)
+        eq_(doc('title').text(),
+            'Collection Search Results :: Add-ons for Firefox')
 
     def test_basic_query(self):
         "Test a simple query"
@@ -356,6 +440,13 @@ class FrontendSearchTest(SphinxTestCase):
         doc = pq(resp.content)
         eq_(doc('.item').length, 0)
 
+    def test_themes_in_results(self):
+        """Many themes have platform ids that aren't 1, we should make sure we
+        are returning them."""
+        resp = self.get_response(q='grapple')
+        doc = pq(resp.content)
+        eq_('GrApple Yummy', doc('.item h3 a').text())
+
 
 class ViewTest(test_utils.TestCase):
     """Tests some of the functions used in building the view."""
@@ -389,17 +480,10 @@ class TestSearchForm(test_utils.TestCase):
     fixtures = ['base/fixtures']
 
     def test_get_app_versions(self):
-        actual = forms.get_app_versions()
-        expected = {
-            amo.FIREFOX.id: ['2.0', '3.0', '3.5', '3.6', '3.7'],
-            amo.THUNDERBIRD.id: [],
-            amo.SUNBIRD.id: [],
-            amo.SEAMONKEY.id: [],
-            amo.MOBILE.id: ['1.0'],
-        }
-        for app in expected:
-            expected[app] = [(k, k) for k in expected[app]]
-            expected[app].append(('Any', 'any'))
+        actual = forms.get_app_versions(amo.FIREFOX)
+        expected = [('any', 'Any'), ('3.7', '3.7'), ('3.6', '3.6'),
+                    ('3.5', '3.5'), ('3.0', '3.0'),]
+
         # So you added a new appversion and this broke?  Sorry about that.
         eq_(actual, expected)
 
@@ -424,3 +508,15 @@ def test_showing_helper():
     c['tag'] = ''
     eq_('Showing 1 - 20 of 1000 results for <strong>balls</strong>',
         render(tpl, c))
+
+
+def test_pagination_result_count():
+    jingo.load_helpers()
+    pager = Mock()
+    pager.start_index = lambda: 1
+    pager.end_index = lambda: 20
+    pager.paginator.count = 999
+    c = dict(pager=pager)
+    eq_(u'Results <strong>1</strong>-<strong>20</strong> of '
+        '<strong>999</strong>',
+        render("{{ pagination_result_count(pager) }}", c))

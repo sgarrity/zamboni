@@ -33,7 +33,7 @@ urlpatterns = patterns('',
     ('', include('pages.urls')),
 
     # Services
-    ('^services/', include('amo.urls')),
+    ('', include('amo.urls')),
 
     # Search
     ('^search/', include('search.urls')),
@@ -63,8 +63,16 @@ urlpatterns = patterns('',
 
     ('^pages/about$',
      lambda r: redirect('pages.about', permanent=True)),
+
     ('^pages/faq$',
      lambda r: redirect('pages.faq', permanent=True)),
+
+    # Redirect persona/xxx
+    ('^persona/(\d+)',
+     lambda r, id: redirect('addons.detail', id, permanent=True)),
+
+    # Firefox Cup page, /firefoxcup
+    ('^firefoxcup/', include('firefoxcup.urls'))
 )
 
 if settings.DEBUG:

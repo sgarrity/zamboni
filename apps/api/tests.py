@@ -25,15 +25,21 @@ def api_url(x, app='firefox', lang='en-US', version=1.2):
 client = Client()
 make_call = lambda *args, **kwargs: client.get(api_url(*args, **kwargs))
 
-class UtilsTest():
+
+def test_json_not_implemented():
+    eq_(api.views.APIView().render_json({}), '{"msg": "Not implemented yet."}')
+
+
+class UtilsTest(TestCase):
 
     fixtures = ['base/fixtures']
 
     def test_dict(self):
         "Verify that we're getting dict."
         a = Addon.objects.get(pk=3615)
-        d = addon_to_dict(a)
-        assert d['learnmore'].endswith('/addon/3615/?src=test')
+        d = api.utils.addon_to_dict(a)
+        assert d['learnmore'].endswith('/addon/3615/?src=api')
+
 
 class No500ErrorsTest(TestCase):
     """
@@ -173,6 +179,16 @@ class APITest(TestCase):
         self.assertContains(response,
                 """hash="sha256:5b5aaf7b38e332cc95d92ba759c01"""
                 "c3076b53a840f6c16e01dc272eefcb29566")
+
+    def test_whitespace(self):
+        """Whitespace is apparently evil for learnmore and install."""
+        r = make_call('addon/3615')
+        doc = pq(r.content)
+        learnmore = doc('learnmore')[0].text
+        eq_(learnmore, learnmore.strip())
+
+        install = doc('install')[0].text
+        eq_(install, install.strip())
 
     def test_double_site_url(self):
         """

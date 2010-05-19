@@ -32,13 +32,21 @@ sort_by = (
                               'advanced_search_form_popularity')),
 )
 
+collection_sort_by = (
+    ('weekly', _lazy('Most popular this week')),
+    ('monthly', _lazy('Most popular this month')),
+    ('all', _lazy('Most popular all time')),
+    ('rating', _lazy('Highest Rated')),
+    ('newest', _lazy('Newest')),
+)
+
 per_page = (20, 50, 100)
 
 tuplize = lambda x: divmod(int(x * 10), 10)
 
 # These releases were so minor that we don't want to search for them.
 skip_versions = collections.defaultdict(list)
-skip_versions[amo.FIREFOX] = (tuplize(v) for v in amo.FIREFOX.exclude_versions)
+skip_versions[amo.FIREFOX] = [tuplize(v) for v in amo.FIREFOX.exclude_versions]
 
 min_version = collections.defaultdict(lambda: (0, 0))
 min_version.update({
@@ -49,23 +57,14 @@ min_version.update({
 })
 
 
-def get_app_versions():
-    rv = collections.defaultdict(list)
-    appversions = (AppVersion.objects.filter(application__in=amo.APP_IDS)
-                   .order_by('application'))
-    key = lambda x: x.application_id
-    for app_id, versions in itertools.groupby(appversions, key=key):
-        app = amo.APP_IDS[app_id]
-        min_ver, skip = min_version[app], skip_versions[app]
-        versions = [(a.major, a.minor1) for a in versions]
-        # Find all the unique (major, minor) pairs.
-        groups = itertools.groupby(sorted(versions))
-        strings = ['%s.%s' % v for v, group in groups
-                   if v >= min_ver and v not in skip]
-        rv[app_id] = [(s, s) for s in strings]
-    for app_id in amo.APP_IDS:
-        rv[app_id] += [(_('Any'), 'any')]
-    return rv
+def get_app_versions(app):
+    appversions = AppVersion.objects.filter(application=app.id)
+    min_ver, skip = min_version[app], skip_versions[app]
+    versions = [(a.major, a.minor1) for a in appversions]
+    strings = ['%s.%s' % v for v in sorted(set(versions), reverse=True)
+               if v >= min_ver and v not in skip]
+
+    return [(_('any'), _('Any'))] + zip(strings, strings)
 
 
 # Fake categories to slip some add-on types into the search groups.
@@ -87,19 +86,24 @@ def get_search_groups(app):
 
 def SearchForm(request):
 
-    search_groups, top_level = get_search_groups(request.APP or amo.FIREFOX)
+    current_app = request.APP or amo.FIREFOX
+    search_groups, top_level = get_search_groups(current_app)
+
 
     class _SearchForm(forms.Form):
         q = forms.CharField(required=False)
 
         cat = forms.ChoiceField(choices=search_groups, required=False)
 
+        # TODO(davedash): Remove when we're done with remora.
         appid = forms.TypedChoiceField(label=_('Application'),
             choices=[(app.id, app.pretty) for app in amo.APP_USAGE],
             required=False, coerce=int)
 
         # This gets replaced by a <select> with js.
-        lver = forms.CharField(label=_('Version'), required=False)
+        lver = forms.ChoiceField(
+                label=_(u'{0} Version'.format(unicode(current_app.pretty))),
+                choices=get_app_versions(current_app), required=False)
 
         atype = forms.TypedChoiceField(label=_('Type'),
             choices=[(t, amo.ADDON_TYPE[t]) for t in types], required=False,
@@ -125,9 +129,7 @@ def SearchForm(request):
         page = forms.IntegerField(widget=forms.HiddenInput, required=False)
 
         # Attach these to the form for usage in the template.
-        get_app_versions = staticmethod(get_app_versions)
         top_level_cat = dict(top_level)
-        queryset = AppVersion.objects.filter(id__in=amo.APP_IDS)
 
         # TODO(jbalogh): when we start using this form for zamboni search, it
         # should check that the appid and lver match up using app_versions.
@@ -169,3 +171,20 @@ def SearchForm(request):
     d = request.GET.copy()
 
     return _SearchForm(d)
+
+
+class SecondarySearchForm(forms.Form):
+    q = forms.CharField(widget=forms.HiddenInput, required=False)
+    cat = forms.CharField(widget=forms.HiddenInput)
+    pp = forms.IntegerField(widget=forms.HiddenInput, required=False)
+    sortby = forms.ChoiceField(label=_('Sort By'), choices=collection_sort_by,
+                               initial='weekly', required=False)
+    page = forms.IntegerField(widget=forms.HiddenInput, required=False)
+
+    def clean(self):
+        d = self.cleaned_data
+
+        if not d.get('pp'):
+            d['pp'] = per_page[0]
+
+        return d

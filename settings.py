@@ -135,7 +135,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'amo.context_processors.app',
     'amo.context_processors.i18n',
     'amo.context_processors.global_settings',
-    'minify.helpers.build_ids',
+    'jingo_minify.helpers.build_ids',
 )
 
 TEMPLATE_DIRS = (
@@ -163,9 +163,13 @@ def JINJA_CONFIG():
 
 
 MIDDLEWARE_CLASSES = (
-    'commonware.log.ThreadRequestMiddleware',
     # AMO URL middleware comes first so everyone else sees nice URLs.
     'amo.middleware.LocaleAndAppURLMiddleware',
+    'amo.middleware.RemoveSlashMiddleware',
+
+    # Munging REMOTE_ADDR must come before ThreadRequest.
+    'commonware.middleware.SetRemoteAddrFromForwardedFor',
+    'commonware.log.ThreadRequestMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'amo.middleware.NoVarySessionMiddleware',
@@ -201,7 +205,8 @@ INSTALLED_APPS = (
     'discovery',
     'editors',
     'files',
-    'minify',
+    'firefoxcup',
+    'jingo_minify',
     'nick',
     'pages',
     'reviews',
@@ -300,7 +305,6 @@ MINIFY_BUNDLES = {
 
             'js/jquery.cookie.js',
             'js/amo2009/global.js',
-            'js/amo2009/slimbox2.js',
             'js/jquery-ui/jqModal.js',
             'js/amo2009/home.js',
 
@@ -315,6 +319,9 @@ MINIFY_BUNDLES = {
             # Personas
             'js/zamboni/jquery.hoverIntent.min.js',
             'js/zamboni/personas.js',
+
+            # Collections
+            'js/zamboni/collections.js',
         ),
     }
 }

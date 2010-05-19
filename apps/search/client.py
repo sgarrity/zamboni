@@ -13,6 +13,7 @@ import sphinxapi as sphinx
 import amo
 from amo.models import manual_order
 from addons.models import Addon, Category
+from bandwagon.models import Collection
 from translations.query import order_by_translation
 from translations.transformer import get_trans
 from tags.models import Tag
@@ -55,7 +56,8 @@ def extract_filters(term, kwargs):
             platform = amo.PLATFORM_DICT.get(platform)
             if platform:
                 platform = platform.id
-        if platform:
+        # If they are seeking out PLATFORM_ALL they mean no platform filtering
+        if platform and platform != amo.PLATFORM_ALL.id:
             filters['platform'] = (platform, amo.PLATFORM_ALL.id,)
 
     # Locale filtering
@@ -160,7 +162,7 @@ def get_category_id(category, application):
 
 
 def sanitize_query(term):
-    term = term.strip('^$ ')
+    term = term.strip('^$ ').replace('^$', '')
     return term
 
 
@@ -187,9 +189,7 @@ class SearchError(Exception):
 
 
 class Client(object):
-    """
-    A search client that queries sphinx for addons.
-    """
+    """A search client that queries sphinx for addons."""
 
     def __init__(self):
         self.sphinx = sphinx.SphinxClient()
@@ -208,6 +208,29 @@ class Client(object):
         # TODO(davedash): make this less arbitrary
         # Unique ID used for logging
         self.id = int(random.random() * 10**5)
+
+    def get_result_set(self, term, result, offset, limit):
+        # Remove transformations for now so we can pull them in later.
+        qs = Addon.objects.all()
+        transforms = qs._transform_fns
+        qs._transform_fns = []
+
+        # Return results as a list of add-ons.
+        addon_ids = [m['attrs']['addon_id'] for m in result['matches']]
+        addons = []
+        for addon_id in addon_ids:
+            try:
+                addons.append(qs.get(pk=addon_id))
+            except Addon.DoesNotExist:  # pragma: no cover
+                log.warn(u'%d: Result for %s refers to non-existent '
+                         'addon: %d' % (self.id, term, addon_id))
+
+        # Do the transforms now that we have all the add-ons.
+        for fn in transforms:
+            fn(addons)
+
+        return ResultSet(addons, min(self.total_found, SPHINX_HARD_LIMIT),
+                         offset)
 
     def log_query(self, term=None):
         """
@@ -341,7 +364,6 @@ class Client(object):
         # Setup some default parameters for the search.
         fields = ("addon_id, app, category, %s" % self.weight_field)
 
-        sc.SetSelect(fields)
         sc.SetFieldWeights({'name': 4})
 
         # Extract and apply various filters.
@@ -359,6 +381,9 @@ class Client(object):
 
         for filter, value in metas.iteritems():
             self.add_filter(filter, value, meta=True)
+
+        # Sanitize the term before we start adding queries.
+        term = sanitize_query(term)
 
         # Meta queries serve aggregate data we might want.  Such as filters
         # that the end-user may want to apply to their query.
@@ -414,8 +439,6 @@ class Client(object):
 
         sc.SetLimits(min(offset, SPHINX_HARD_LIMIT - 1), limit)
 
-        term = sanitize_query(term)
-
         sc.AddQuery(term, 'addons')
         self.queries['primary'] = self.query_index
         self.query_index += 1
@@ -447,8 +470,12 @@ class Client(object):
                 min_vers = [truncate(m['attrs']['min_ver'])
                             for m in result['matches']]
                 result = results[self.queries['max_ver']]
+
+                # 10**13-1 (a bunch of 9s) is a pseudo max_ver that is
+                # meaningless for faceted search.
                 max_vers = [truncate(m['attrs']['max_ver'])
-                            for m in result['matches']]
+                            for m in result['matches']
+                            if m['attrs']['max_ver'] != 10 ** 13 - 1]
                 versions = list(set(min_vers + max_vers))
                 sorted(versions, reverse=True)
                 self.meta['versions'] = [v for v in versions
@@ -488,29 +515,116 @@ class Client(object):
                 self.meta['tags'] = manual_order(Tag.objects.all(), tag_ids)
 
         result = results[self.queries['primary']]
+        self.total_found = result.get('total_found', 0) if result else 0
+
+        if result.get('error'):
+            log.error(result['error'])
+            return []  # Fail silently.
+
+        if result and result['total']:
+            return self.get_result_set(term, result, offset, limit)
+        else:
+            return []
+
+
+class PersonasClient(Client):
+    """A search client that queries sphinx for Personas."""
+
+    def query(self, term, limit=10, offset=0, **kwargs):
+        sc = self.sphinx
+        sc.SetSelect('addon_id')
+        sc.SetLimits(min(offset, SPHINX_HARD_LIMIT - 1), limit)
+        term = sanitize_query(term)
+        self.log_query(term)
+
+        try:
+            result = sc.Query(term, 'personas')
+        except socket.timeout:
+            log.error("Query has timed out.")
+            raise SearchError("Query has timed out.")
+        except Exception, e:
+            log.error("Sphinx threw an unknown exception: %s" % e)
+            raise SearchError("Sphinx threw an unknown exception.")
+
+        if sc.GetLastError():
+            raise SearchError(sc.GetLastError())
+
         self.total_found = result['total_found'] if result else 0
 
         if result and result['total']:
-            # Remove transformations for now so we can pull them in later.
-            qs = Addon.objects.all()
+            return self.get_result_set(term, result, offset, limit)
+        else:
+            return []
+
+
+class CollectionsClient(Client):
+    """A search client that queries sphinx for Collections."""
+
+    def query(self, term, limit=10, offset=0, **kwargs):
+        sc = self.sphinx
+        sc.SetSelect("collection_id")
+
+        sc.SetLimits(min(offset, SPHINX_HARD_LIMIT - 1), limit)
+        term = sanitize_query(term)
+
+        self.add_filter('locale_ord', get_locale_ord())
+
+        sort_field = 'weekly_subscribers DESC'
+
+        sort_choices = {
+                'weekly': sort_field,
+                'monthly': 'monthly_subscribers DESC',
+                'all': 'subscribers DESC',
+                'rating': 'rating DESC',
+                'newest': 'created DESC',
+                }
+
+        if 'sort' in kwargs and kwargs['sort']:
+            sort_field = sort_choices.get(kwargs.get('sort'))
+            if not sort_field:
+                log.error("Invalid sort option: %s" % kwargs.get('sort'))
+                raise SearchError("Invalid sort option given: %s" %
+                                  kwargs.get('sort'))
+
+        sc.SetSortMode(sphinx.SPH_SORT_EXTENDED, sort_field)
+
+        self.log_query(term)
+
+        try:
+            result = sc.Query(term, 'collections')
+        except socket.timeout:
+            log.error("Query has timed out.")
+            raise SearchError("Query has timed out.")
+        except Exception, e:
+            log.error("Sphinx threw an unknown exception: %s" % e)
+            raise SearchError("Sphinx threw an unknown exception.")
+
+        if sc.GetLastError():
+            raise SearchError(sc.GetLastError())
+
+        self.total_found = result['total_found'] if result else 0
+
+        if result and result['total']:
+            qs = Collection.objects.all()
             transforms = qs._transform_fns
             qs._transform_fns = []
 
-            # Return results as a list of add-ons.
-            addon_ids = [m['attrs']['addon_id'] for m in result['matches']]
-            addons = []
-            for addon_id in addon_ids:
+            collection_ids = (m['attrs']['collection_id'] for m
+                              in result['matches'])
+            collections = []
+
+            for collection_id in collection_ids:
                 try:
-                    addons.append(qs.get(pk=addon_id))
-                except Addon.DoesNotExist:
+                    collections.append(qs.get(pk=collection_id))
+                except Collection.DoesNotExist:  # pragma: no cover
                     log.warn(u'%d: Result for %s refers to non-existent '
-                             'addon: %d' % (self.id, term, addon_id))
+                             'addon: %d' % (self.id, term, collection_id))
 
-            # Do the transforms now that we have all the add-ons.
             for fn in transforms:
-                fn(addons)
+                fn(collections)
 
-            return ResultSet(addons, min(self.total_found, SPHINX_HARD_LIMIT),
-                             offset)
+            return ResultSet(collections,
+                             min(self.total_found, SPHINX_HARD_LIMIT), offset)
+
         else:
             return []
