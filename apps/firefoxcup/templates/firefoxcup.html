@@ -5,33 +5,15 @@
 {% block site_header %}{% endblock %}
 
 {% block extrahead %}
-    <link rel="stylesheet" href="{{ MEDIA_URL }}/css/firefoxcup/reset-fonts-grids.css" />
-    <link rel="stylesheet" href="{{ MEDIA_URL }}/css/firefoxcup/firefoxcup.css" />
-    <script src="{{ MEDIA_URL }}/js/firefoxcup/yahoo-dom-event.js"></script>
-    <script src="{{ MEDIA_URL }}/js/firefoxcup/animation.js"></script>
-    <script src="{{ MEDIA_URL }}/js/firefoxcup/mozilla-pager.js"></script>
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup/reset-fonts-grids.css" />
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup.css" />
+	<script src="{{ MEDIA_URL }}js/firefoxcup/yahoo-dom-event.js"></script>
+	<script src="{{ MEDIA_URL }}js/firefoxcup/animation-min.js"></script>
+	<script src="{{ MEDIA_URL }}js/firefoxcup/mozilla-pager.js"></script>
 {% endblock %}
 
 {% block main_content %}
 <div id="wrapper">
-
-<script>
-    // Add a class to the body tag to alternate promo features
-    var class_options = new Array( "footiefox", "footiefox" );
-
-    if (Math.random) {
-        var choice = Math.floor(Math.random() * (class_options.length));
-
-        // Just in case javascript gets carried away...
-        choice = ( (choice < class_options.length)  && choice >= 0) ? choice : 0;
-
-        if (document.body.className == '') {
-          document.body.className = class_options[choice];
-        } else {
-          document.body.className += ' '+class_options[choice];
-        }
-    }
-</script>
 
 <div id="doc">
 
@@ -42,7 +24,7 @@
   </ul>
 
   <div id="main-feature">
-      <h1><img src="{{ MEDIA_URL }}/img/firefoxcup/logo.png" alt="{{ _('Firefox Cup') }}" /></h1>
+      <h1><img src="{{ MEDIA_URL }}img/firefoxcup/logo.png" alt="{{ _('Firefox Cup') }}" /></h1>
       <h2>{{ _('Install Personas to support your team and compete for the Firefox Cup.') }}</h2>
     <div id="download">
       <a href="http://www.mozilla.com/firefox/">
@@ -71,9 +53,9 @@
       <div class="pager-content">
 
         <div class="personas-contents default-page" id="feature-p1">
-          <script type="text/javascript">// <![CDATA[
+          <script type="text/javascript">
           document.getElementById('feature-p1').id = 'page-feature-p1';
-          // ]]></script>
+          </script>
           <ul class="personas-list">
             <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
             <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
@@ -85,9 +67,9 @@
         </div>
 
         <div class="personas-contents" id="feature-p2">
-          <script type="text/javascript">// <![CDATA[
+          <script type="text/javascript">
           document.getElementById('feature-p2').id = 'page-feature-p2';
-          // ]]></script>
+          </script>
           <ul class="personas-list">
             <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
             <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
@@ -99,9 +81,9 @@
         </div>
 
         <div class="personas-contents" id="feature-p3">
-          <script type="text/javascript">// <![CDATA[
+          <script type="text/javascript">
           document.getElementById('feature-p3').id = 'page-feature-p3';
-          // ]]></script>
+          </script>
           <ul class="personas-list">
             <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
             <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
@@ -113,9 +95,9 @@
         </div>
 
         <div class="personas-contents" id="feature-p4">
-          <script type="text/javascript">// <![CDATA[
+          <script type="text/javascript">
           document.getElementById('feature-p4').id = 'page-feature-p4';
-          // ]]></script>
+          </script>
           <ul class="personas-list">
             <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
             <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
@@ -175,25 +157,25 @@
       </thead>
       <tbody>
         <tr>
-          <td><img src="{{ MEDIA_URL }}/img/firefoxcup/flags/usa.png" alt="{{ _('Flag') }}" /></td>
+          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/usa.png" alt="{{ _('Flag') }}" /></td>
           <td>{{ _('United States') }}</td>
           <td>###,###</td>
           <td>###,###</td>
         </tr>
         <tr>
-          <td><img src="{{ MEDIA_URL }}/img/firefoxcup/flags/brazil.png" alt="{{ _('Flag') }}" /></td>
+          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/brazil.png" alt="{{ _('Flag') }}" /></td>
           <td>{{ _('Brazil') }}</td>
           <td>###,###</td>
           <td>###,###</td>
         </tr>
         <tr>
-          <td><img src="{{ MEDIA_URL }}/img/firefoxcup/flags/argentina.png" alt="{{ _('Flag') }}" /></td>
+          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/argentina.png" alt="{{ _('Flag') }}" /></td>
           <td>{{ _('Argentina') }}</td>
           <td>###,###</td>
           <td>###,###</td>
         </tr>
         <tr>
-          <td><img src="{{ MEDIA_URL }}/img/firefoxcup/flags/australia.png" alt="{{ _('Flag') }}" /></td>
+          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/australia.png" alt="{{ _('Flag') }}" /></td>
           <td>{{ _('Australia') }}</td>
           <td>###,###</td>
           <td>###,###</td>
@@ -204,21 +186,18 @@
     <table id="tweets">
       <thead>
         <tr>
-          <th><img src="{{ MEDIA_URL }}/img/firefoxcup/twitter.png" alt="Twitter" height="38" width="37" /> {{ _('Follow our tweets') }}</th>
+          <th><img src="{{ MEDIA_URL }}img/firefoxcup/twitter.png" alt="Twitter" height="38" width="37" /> {{ _('Follow our tweets') }}</th>
         </tr>
         <tr><td></td></tr>
       </thead>
       <tbody>
-        <tr><td><a href="#">#hashtag</a> Lorem Ipsum dolor siametur sitamet...</td></tr>
-        <tr><td><a href="#">#hashtag</a> Lorem Ipsum dolor siametur sitamet...</td></tr>
-        <tr><td><a href="#">#hashtag</a> Lorem Ipsum dolor siametur sitamet...</td></tr>
-        <tr><td><a href="#">#hashtag</a> Lorem Ipsum dolor siametur sitamet...</td></tr>
-        <tr><td><a href="#">#hashtag</a> Lorem Ipsum dolor siametur sitamet...</td></tr>
+        {% for tweet in tweets %}
+          <tr><td>{{ tweet|safe }}</td></tr>
+        {% endfor %}
       </tbody>
     </table>
 
   </div>
-
 
 </div><!-- end #doc -->
 </div><!-- end #wrapper -->
