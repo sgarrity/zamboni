@@ -36,6 +36,11 @@ body, h1, h2, h3, h4, h5, h6 {
 	width: auto;
 }
 
+#footer .section {
+	width: 990px;
+	text-align: left;
+}
+
 /* }}}
 /* {{{ Header */
 
@@ -326,6 +331,7 @@ ul.personas-list {
 	background: #fff;
 	border-left: 1px solid #fff;
 	border-right: 1px solid #c0e2ec;
+	vertical-align: middle;
 }
 
 #teams tbody tr:nth-child(even) td {
@@ -462,6 +468,25 @@ ul.personas-list {
 	border-bottom-left-radius: 10px;
 	background: #fff;
 	padding: 5px;
+}
+
+/* }}} */
+/* {{{ Reset AMO Styles */
+
+table {
+    border-bottom: 0;
+}
+
+thead th {
+	border: 0;
+}
+
+tbody {
+    border: 0;
+}
+
+tbody tr th, tbody tr td {
+    border-top: 0;
 }
 
 /* }}} */
