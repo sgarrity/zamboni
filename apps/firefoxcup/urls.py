@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 
-from jingo.views import direct_to_template
+from . import views
 
 urlpatterns = patterns('',
-    url('^$', direct_to_template, {'template': 'firefoxcup.html'},
+    url('^$', views.index,
         name='firefoxcup.index'),
 )
