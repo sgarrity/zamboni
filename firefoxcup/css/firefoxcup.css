@@ -12,11 +12,11 @@ a:active {
 }
 
 body {
-	background: #fff url(../../img/firefoxcup/background-repeat.jpg) top center repeat-x;
+	background: #fff url(../img/background-repeat.jpg) top center repeat-x;
 }
 
 #wrapper {
-	background: url(../../img/firefoxcup/background.jpg) top center no-repeat;
+	background: url(../img/background.jpg) top center no-repeat;
 }
 
 #doc {
@@ -81,7 +81,7 @@ body {
 	float: left;
 	width: 280px;
 	margin-top: 45px;
-	background: url(../../img/firefoxcup/background-download.png) top right no-repeat;
+	background: url(../img/background-download.png) top right no-repeat;
 }
 
 #download h3 {
@@ -115,7 +115,7 @@ body {
 }
 
 #main-content {
-	background: #fff url(../../img/firefoxcup/preview-uk.jpg) 10px 100px no-repeat;
+	background: #fff url(../img/preview-uk.jpg) 10px 100px no-repeat;
 }
 
 #main-content h2 {
@@ -136,7 +136,7 @@ body {
 	float: left;
 	margin-left: 5px;
 	padding-right: 25px;
-	background: url(../../img/firefoxcup/arrow.png) 100% 50% no-repeat;
+	background: url(../img/arrow.png) 100% 50% no-repeat;
 }
 
 #personas-nav {
@@ -208,7 +208,7 @@ ul.personas-list {
 	font-size: 22px;
 }
 
-.footiefox #sidebar #featured { background-image: url(../../img/firefoxcup/footiefox.png); }
+.footiefox #sidebar #featured { background-image: url(../img/footiefox.png); }
 
 .footiefox #sidebar .sub-feature #featured-footiefox {
 	display: block;
@@ -216,12 +216,12 @@ ul.personas-list {
 }
 
 #sidebar #email {
-	background-image: url(../../img/firefoxcup/email.png);
+	background-image: url(../img/email.png);
 	padding-left: 75px;
 }
 
 #sidebar #facebook {
-	background-image: url(../../img/firefoxcup/facebook.png);
+	background-image: url(../img/facebook.png);
 	padding-left: 75px;
 }
 
