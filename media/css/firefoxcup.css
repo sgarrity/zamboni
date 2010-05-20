@@ -15,6 +15,10 @@ body {
 	background: #fff url(../../img/firefoxcup/background-repeat.jpg) top center repeat-x;
 }
 
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: "helvetica neue",arial,helvetica,sans-serif;
+}
+
 #wrapper {
 	background: url(../../img/firefoxcup/background.jpg) top center no-repeat;
 }
@@ -22,6 +26,14 @@ body {
 #doc {
 	width: 990px;
 	overflow: auto;
+}
+
+.section {
+	max-width: none;
+	min-height: 0;
+	min-width: 0;
+	padding: 0;
+	width: auto;
 }
 
 /* }}}
@@ -84,16 +96,35 @@ body {
 	background: url(../../img/firefoxcup/background-download.png) top right no-repeat;
 }
 
-#download h3 {
+
+#download a,
+#download a span {
+	display: block;
+	color: #fff;
+}
+
+#download a span.title {
 	font-size: 24px;
 	line-height: 1.5;
 	padding: 15px 0 0 5px;
+	color: #fff;
 }
 
-#download p {
+#download a span {
 	padding: 0 90px 5px 5px;
 }
 
+#download a:link,
+#download a:visited,
+#download a:hover,
+#download a:active {
+	text-decoration: none;
+}
+
+#download a:hover span.title,
+#download a:active span.title {
+	text-decoration: underline;
+}
 
 /* }}} */
 /* {{{ Main Content */
