@@ -18,6 +18,13 @@ class CakeTestCase(TestCase):
 
     fixtures = ['cake/sessions', 'base/global-stats']
 
+    def test_cookie_cleaner(self):
+        "Test that this removes locale-only cookie."
+        c = self.client
+        c.cookies['locale-only'] = 'XENOPHOBIA 4 EVAR'
+        r = c.get('/', follow=True)
+        eq_(r.cookies.get('locale-only'), None)
+
     def test_login(self):
         """
         Given a known remora cookie, can we visit the homepage and appear
@@ -67,6 +74,13 @@ class CakeTestCase(TestCase):
         session.data = session.data.replace('"', 'breakme', 5)
         self.assertEqual(None, backend.authenticate(session=session))
 
+    def test_utf8_session_data(self):
+        """Bug 566377."""
+        backend = SessionBackend()
+        session = Session.objects.get(pk='47f051c99f083244bf653d5798111216')
+        user = backend.authenticate(session=session)
+        assert user != None, "We should get a user."
+
     def test_backend_get_user(self):
         s = SessionBackend()
         self.assertEqual(None, s.get_user(12))
@@ -93,7 +107,8 @@ class CakeTestCase(TestCase):
     @patch('django.db.models.fields.related.'
            'ReverseSingleRelatedObjectDescriptor.__get__')
     def test_backend_profile_exceptions(self, p_mock):
-        # We have a legitimate profile, but for some reason the user_id is phony
+        # We have a legitimate profile, but for some reason the user_id is
+        # phony.
         s = SessionBackend()
         backend = SessionBackend()
         session = Session.objects.get(pk='17f051c99f083244bf653d5798111216')
@@ -106,7 +121,6 @@ class CakeTestCase(TestCase):
 
         p_mock.side_effect = Exception()
         eq_(None, s.authenticate(session))
-
 
 
 class TestHelpers(TestCase):

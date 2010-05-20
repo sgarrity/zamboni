@@ -1,4 +1,3 @@
-import logging
 import random
 import string
 from django import http
@@ -10,10 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.template import Context, loader
 
+import commonware.log
+import jingo
 from tower import ugettext as _
 
-import jingo
 
+from access import acl
 import amo
 from amo.urlresolvers import reverse
 from bandwagon.models import Collection
@@ -23,7 +24,7 @@ from .signals import logged_out
 from .users import forms
 from .utils import EmailResetCode
 
-log = logging.getLogger('z.users')
+log = commonware.log.getLogger('z.users')
 
 
 def confirm(request, user_id, token):
@@ -270,14 +271,19 @@ def profile(request, user_id):
         own_coll = []
     if user.display_collections_fav:
         fav_coll = Collection.objects.filter(
-            collectionsubscription__user=user,
+            subscriptions__user=user,
             listed=True).order_by('name')
     else:
         fav_coll = []
 
+    edit_any_user = acl.action_allowed(request, 'Admin', 'EditAnyUser')
+    own_profile = request.user.is_authenticated() and (
+        request.amo_user.id == user.id)
+
     return jingo.render(request, 'users/profile.html',
                         {'profile': user, 'own_coll': own_coll,
-                         'fav_coll': fav_coll})
+                         'fav_coll': fav_coll, 'edit_any_user': edit_any_user,
+                         'own_profile': own_profile})
 
 
 def register(request):

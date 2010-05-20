@@ -59,9 +59,9 @@ settings from a root logger.  zamboni's root namespace is just ``"z"``, in the
 interest of brevity.  In the caching package, we create a logger that inherits
 the configuration by naming it ``"z.caching"``::
 
-    import logging
+    import commonware.log
 
-    log = logging.getLogger('z.caching')
+    log = commonware.log.getLogger('z.caching')
 
     log.debug("I'm in the caching package.")
 
