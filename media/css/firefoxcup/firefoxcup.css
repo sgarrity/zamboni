@@ -270,10 +270,24 @@ ul.personas-list {
 	display: block;
 }
 
-#sidebar .subfeatures li a#featured-footiefox {
+#sidebar .subfeatures li#featured a {
+
 	display: block;
-	background-image: url(../../img/firefoxcup/footiefox.png);
 	min-height: 80px;
+}
+
+#sidebar .subfeatures li a#featured-footiefox {
+	background-image: url(../../img/firefoxcup/footiefox.png);
+}
+
+#sidebar .subfeatures li a#featured-rockyourfirefox {
+	background-image: url(../../img/firefoxcup/rockyourfirefox.png);
+	background-position: 0 0;
+}
+
+#sidebar .subfeatures li a#featured-amo {
+	background-image: url(../../img/firefoxcup/addons.png);
+	background-position: 10px 20px;
 }
 
 #sidebar #email a {
