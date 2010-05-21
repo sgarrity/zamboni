@@ -252,7 +252,15 @@ SELENIUM_CONFIG = {}
 # Tells the extract script what files to look for l10n in and what function
 # handles the extraction.  The Tower library expects this.
 DOMAIN_METHODS = {
+    'firefoxcup': [
+        ('apps/firefoxcup/**.py',
+            'tower.management.commands.extract.extract_tower_python'),
+        ('apps/firefoxcup/templates/**.html',
+            'tower.management.commands.extract.extract_tower_template'),
+    ],
     'messages': [
+        ('apps/firefoxcup/**',
+            'ignore'),
         ('apps/**.py',
             'tower.management.commands.extract.extract_tower_python'),
         ('**/templates/**.html',
@@ -271,6 +279,13 @@ DOMAIN_METHODS = {
         ('media/js/zamboni/**.js', 'javascript'),
     ],
 }
+
+# These domains will not be merged into z-keys.pot and will use separate PO 
+# files.
+STANDALONE_DOMAINS = [
+    'javascript',
+    'firefoxcup',
+    ]
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
