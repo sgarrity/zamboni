@@ -1,14 +1,15 @@
-import logging
 from time import time
 
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.utils.encoding import smart_str
 
+import commonware.log
 import phpserialize
 
 from users.models import UserProfile
 
-log = logging.getLogger('z.cake')
+log = commonware.log.getLogger('z.cake')
 
 
 class SessionBackend:
@@ -24,7 +25,7 @@ class SessionBackend:
             return None
 
         try:
-            serialized_data = session.data[5:]
+            serialized_data = smart_str(session.data[5:])
             php_user = phpserialize.loads(serialized_data)
         except ValueError, e:
             # Bug 553397

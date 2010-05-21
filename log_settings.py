@@ -3,27 +3,20 @@ import logging.handlers
 
 from django.conf import settings
 
-import commonware.log
-
-# Override logging.Logger to add REMOTE_ADDR to our log formats.
-logging.setLoggerClass(commonware.log.Logger)
-
 # Loggers created under the "z" namespace, e.g. "z.caching", will inherit the
 # configuration from the base z logger.
 log = logging.getLogger('z')
 
 level = settings.LOG_LEVEL
 
+base_fmt = ('[%(REMOTE_ADDR)s] %(name)s:%(levelname)s %(message)s '
+            ':%(pathname)s:%(lineno)s')
 if settings.DEBUG:
-    fmt = ('%(asctime)s %(name)s:%(levelname)s %(message)s '
-           ':%(pathname)s:%(lineno)s')
-    fmt = getattr(settings, 'LOG_FORMAT', fmt)
+    fmt = getattr(settings, 'LOG_FORMAT', '%(asctime)s ' + base_fmt)
     handler = logging.StreamHandler()
     formatter = logging.Formatter(fmt, datefmt='%H:%M:%S')
 else:
-    fmt = '%s: %s' % (settings.SYSLOG_TAG,
-              '[%(REMOTE_ADDR)s] %(name)s:%(levelname)s %(message)s '
-              ':%(pathname)s:%(lineno)s')
+    fmt = '%s: %s' % (settings.SYSLOG_TAG, base_fmt)
     fmt = getattr(settings, 'SYSLOG_FORMAT', fmt)
     SysLogger = logging.handlers.SysLogHandler
     handler = SysLogger(facility=SysLogger.LOG_LOCAL7)

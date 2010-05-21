@@ -7,12 +7,13 @@
 {% block extrahead %}
   <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup/reset-fonts-grids.css" />
   <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup/firefoxcup.css" />
-	<script src="{{ MEDIA_URL }}js/firefoxcup/yahoo-dom-event.js"></script>
-	<script src="{{ MEDIA_URL }}js/firefoxcup/animation-min.js"></script>
-	<script src="{{ MEDIA_URL }}js/firefoxcup/mozilla-pager.js"></script>
+  <script src="{{ MEDIA_URL }}js/firefoxcup/yahoo-dom-event.js"></script>
+  <script src="{{ MEDIA_URL }}js/firefoxcup/animation-min.js"></script>
+  <script src="{{ MEDIA_URL }}js/firefoxcup/firefoxcup.js"></script>
 {% endblock %}
 
 {% block main_content %}
+
 <div id="wrapper">
 
 <div id="doc">
@@ -116,23 +117,38 @@
 
   <div id="sidebar">
 
-      <div class="sub-feature" id="email">
-        <h3>{{ _('Sign Up!') }}</h3>
-        <p>{{ _('Stay current with Firefox Cup news by email.') }}</p>
-      </div>
+    <ul class="subfeatures">
 
-      <div class="sub-feature" id="featured">
-        <div id="featured-footiefox">
-          <h3>{{ _('FootieFox') }}</h3>
-          <p>{{ _("Don't miss a moment of action. FootieFox shows latest scores in your Firefox.") }}</p>
-          <ul class="link"><li><a href="#">{{ _('Install FootieFox Add-on Now') }}</a></li></ul>
-        </div>
-      </div>
+      <li id="email">
+        <a href="#">
+          <span class="title">{{ _('Sign Up!') }}</span>
+          <span>{{ _('Stay current with Firefox Cup news by email.') }}</span>
+        </a>
+      </li>
 
-      <div class="sub-feature" id="facebook">
-        <h3>{{ _('Stay Connected!') }}</h3>
-        <p>{{ _('Become a Fan') }}</p>
-      </div>
+      <li id="featured">
+        <a href="https://addons.mozilla.org/en-US/firefox/addon/725/" id="featured-footiefox">
+          <span class="title">{{ _('FootieFox') }}</span>
+          <span>{{ _("Don't miss a moment of action. FootieFox shows latest scores in your Firefox.") }}</span>
+        </a>
+        <a href="http://rockyourfirefox.com/" id="featured-rockyourfirefox">
+          <span class="title">{{ _('Rock Your Firefox') }}</span>
+          <span>{{ _("Discover new add-ons to brighten your day.") }}</span>
+        </a>
+        <a href="https://addons.mozilla.org/" id="featured-amo">
+          <span class="title">{{ _('Get Personal') }}</span>
+          <span>{{ _("Adapt Firefox to the way you browse with 1,000s of free add-ons.") }}</span>
+        </a>
+      </li>
+
+      <li id="facebook">
+        <a href="http://www.facebook.com/#!/Firefox">
+          <span class="title">{{ _('Stay Connected!') }}</span>
+          <span>{{ _('Become a Fan') }}</span>
+        </a>
+      </li>
+
+    </ul>
 
   </div>
 
@@ -186,7 +202,7 @@
     <table id="tweets">
       <thead>
         <tr>
-          <th><img src="{{ MEDIA_URL }}img/firefoxcup/twitter.png" alt="Twitter" height="38" width="37" /> {{ _('Follow our tweets') }}</th>
+          <th><a href="http://twitter.com/Firefox">{{ _('Follow our tweets') }}</a></th>
         </tr>
         <tr><td></td></tr>
       </thead>
@@ -202,4 +218,11 @@
 </div><!-- end #doc -->
 </div><!-- end #wrapper -->
 
+{% endblock %}
+{% block js %}
+  <script>
+    var classOptions = ['default', 'amo', 'rockyourfirefox'];
+    var choice = Math.floor(Math.random() * classOptions.length);
+    $('body').addClass(classOptions[choice]);
+  </script>
 {% endblock %}

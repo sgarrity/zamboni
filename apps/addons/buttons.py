@@ -133,8 +133,11 @@ class InstallButton(object):
 
     def file_details(self, file):
         platform = file.platform_id
-        url = (file.latest_xpi_url() if self.latest else
-               file.get_url_path(self.src))
+        if self.latest and (
+            self.addon.status == file.status == amo.STATUS_PUBLIC):
+            url = file.latest_xpi_url()
+        else:
+            url = file.get_url_path(self.src)
 
         if platform == amo.PLATFORM_ALL.id:
             text, os = _('Download Now'), None
@@ -142,12 +145,14 @@ class InstallButton(object):
             text, os = _('Download'), amo.PLATFORMS[platform]
 
         if self.show_eula:
-            text, url = _('Continue to Download &rarr;'), file.eula_url()
+			# L10n: please keep &nbsp; in the string so the &rarr; does not wrap
+            text, url = _('Continue to Download&nbsp;&rarr;'), file.eula_url()
         elif self.accept_eula:
             text = _('Accept and Download')
         elif self.show_contrib:
             # The eula doesn't exist or has been hit already.
-            text = _('Continue to Download &rarr;')
+			# L10n: please keep &nbsp; in the string so the &rarr; does not wrap
+            text = _('Continue to Download&nbsp;&rarr;')
             roadblock = self.addon.meet_the_dev_url(extra='roadblock')
             url = urlparams(roadblock, eula='')
 
@@ -178,7 +183,8 @@ class SelfHostedInstallButton(InstallButton):
     button_class = ['go']
 
     def links(self):
-        return [Link(_('Continue to Website &rarr;'), self.addon.homepage)]
+		# L10n: please keep &nbsp; in the string so the &rarr; does not wrap
+        return [Link(_('Continue to Website&nbsp;&rarr;'), self.addon.homepage)]
 
 
 class PersonaInstallButton(InstallButton):
