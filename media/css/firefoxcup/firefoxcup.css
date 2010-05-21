@@ -137,6 +137,7 @@ body, h1, h2, h3, h4, h5, h6 {
 #main-content {
 	clear: both;
 	float: left;
+	display: inline;
 	width: 575px;
 	padding: 35px 15px 15px 35px;
 	margin:  0 35px 25px 25px;
@@ -332,6 +333,7 @@ ul.personas-list {
 #teams {
 	width: 625px;
 	float: left;
+	display: inline;
 	border-collapse: separate;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -435,6 +437,7 @@ ul.personas-list {
 #tweets {
 	width: 275px;
 	float: left;
+	display: inline;
 	border-collapse: separate;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
