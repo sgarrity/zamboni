@@ -253,7 +253,9 @@ SELENIUM_CONFIG = {}
 # handles the extraction.  The Tower library expects this.
 DOMAIN_METHODS = {
     'firefoxcup': [
-        ('apps/firefoxcup/templates/*.html',
+        ('apps/firefoxcup/**.py',
+            'tower.management.commands.extract.extract_tower_python'),
+        ('apps/firefoxcup/templates/**.html',
             'tower.management.commands.extract.extract_tower_template'),
     ],
     'messages': [
