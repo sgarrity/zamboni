@@ -14,7 +14,7 @@ def index(request):
     # we only want 15 tweets
     tweets = tweets[:15]
     
-    return jingo.render(request, 'firefoxcup.html', {
+    return jingo.render(request, 'firefoxcup/index.html', {
         'tweets': tweets, 
         'teams': teams})
 

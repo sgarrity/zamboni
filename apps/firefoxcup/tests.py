@@ -3,7 +3,13 @@ from twitter import _prepare_tag, _process_tweet, search, _search_query, _prepar
 from pyquery import PyQuery as pq
 from nose.tools import eq_
 from StringIO import StringIO
+from django.test.client import Client
 
+def test_view():
+    c = Client()
+    res = c.get('/en-US/firefox/firefoxcup/')
+    eq_(res.status_code, 200)
+    
 def test_prepare_tag():
     """foo should be prefixed with #
        #bar should not be changed"""

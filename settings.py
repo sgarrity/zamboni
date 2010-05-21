@@ -255,7 +255,7 @@ DOMAIN_METHODS = {
     'firefoxcup': [
         ('apps/firefoxcup/**.py',
             'tower.management.commands.extract.extract_tower_python'),
-        ('apps/firefoxcup/templates/**.html',
+        ('apps/firefoxcup/templates/firefoxcup/**.html',
             'tower.management.commands.extract.extract_tower_template'),
     ],
     'messages': [
