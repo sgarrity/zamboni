@@ -13,6 +13,7 @@
 {% endblock %}
 
 {% block main_content %}
+
 <div id="wrapper">
 
 <div id="doc">
@@ -130,6 +131,14 @@
           <span class="title">{{ _('FootieFox') }}</span>
           <span>{{ _("Don't miss a moment of action. FootieFox shows latest scores in your Firefox.") }}</span>
         </a>
+        <a href="#" id="featured-rockyourfirefox">
+          <span class="title">{{ _('Rock Your Firefox') }}</span>
+          <span>{{ _("Don't miss a moment of action. FootieFox shows latest scores in your Firefox.") }}</span>
+        </a>
+        <a href="#" id="featured-amo">
+          <span class="title">{{ _('Add-ons') }}</span>
+          <span>{{ _("Don't miss a moment of action. FootieFox shows latest scores in your Firefox.") }}</span>
+        </a>
       </li>
 
       <li id="facebook">
@@ -209,4 +218,11 @@
 </div><!-- end #doc -->
 </div><!-- end #wrapper -->
 
+{% endblock %}
+{% block js %}
+  <script>
+    var classOptions = ['default', 'amo', 'rockyourfirefox'];
+    var choice = Math.floor(Math.random() * classOptions.length);
+    $('body').addClass(classOptions[choice]);
+  </script>
 {% endblock %}
