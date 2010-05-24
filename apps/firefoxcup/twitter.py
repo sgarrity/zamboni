@@ -12,11 +12,6 @@ log = logging.getLogger('z.firefoxcup')
 parser = ttp.Parser()
 bleach = Bleach()
 
-def _prepare_tag(tag):
-    if (tag[0] != '#'):
-        tag = '#' + tag
-    return tag
-
 def _prepare_lang(lang):
     return lang.split('-')[0]
 
@@ -25,14 +20,14 @@ def _search_query(tags, lang):
         'q': ' OR '.join(tags),
         'lang': lang})
 
-def search(tags, lang, check_cache=True, open=urlopen, query_builder=_search_query):
-    tags = map(_prepare_tag, tags)
+def search(tags, lang='all', check_cache=True, open=urlopen):
     lang = _prepare_lang(lang)
 
     if lang not in config.twitter_languages:
         lang = 'all'
 
-    url = "http://search.twitter.com/search.json?" + query_builder(tags, lang)
+    url = "http://search.twitter.com/search.json?" + _search_query(tags, lang)
+    log.debug(url)
 
     # build cache key
     hash = md5(url).hexdigest()
