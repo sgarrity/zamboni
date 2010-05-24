@@ -68,7 +68,9 @@
 
           {{ big_install_button(addon, show_warning=False) }}
 
+          {# TODO(davedash): Remove until zamboni does sharing
           {{ addon_sharing(addon) }}
+          #}
 
       </div></div>{# /addon-summary and -wrapper #}
   </div></div>{# /featured-inner and featured #}
@@ -105,9 +107,11 @@
     {% endcache %}
   </div>{# /more-personas #}
 
+  {# TODO(davedash): uncomment when we implement reviews on zamboni.
   {{ review_list_box(addon=addon, reviews=addon.reviews) }}
 
   {{ review_add_box(addon=addon) }}
+  #}
 
 </div>{# /primary #}
 

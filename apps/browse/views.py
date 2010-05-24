@@ -271,6 +271,8 @@ def personas(request, category=None):
     categories = order_by_translation(q, 'name')
 
     base = Addon.objects.valid().filter(type=TYPE)
+    featured = base & Addon.objects.featured(request.APP)
+    is_homepage = category is None and 'sort' not in request.GET
 
     if category is not None:
         category = get_object_or_404(q, slug=category)
@@ -283,13 +285,16 @@ def personas(request, category=None):
     else:
         template = 'category_landing.html'
 
-    addons = amo.utils.paginate(request, filter.qs, 30)
+    # Pass the count from base instead of letting it come from
+    # filter.qs.count() since that would join against personas.
+    addons = amo.utils.paginate(request, filter.qs, 30, count=base.count())
 
     search_cat = '%s,%s' % (TYPE, category.id if category else 0)
 
     return jingo.render(request, 'browse/personas/' + template,
                         {'categories': categories, 'category': category,
                          'filter': filter, 'addons': addons,
+                         'featured': featured, 'is_homepage': is_homepage,
                          'search_cat': search_cat})
 
 
