@@ -3,13 +3,8 @@
 {% block title %}{{ _('Firefox Cup') }}{% endblock %}
 
 {% block site_header %}{% endblock %}
-
-{% block extrahead %}
-  <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup/reset-fonts-grids.css" />
-  <link rel="stylesheet" href="{{ MEDIA_URL }}css/firefoxcup/firefoxcup.css" />
-  <script src="{{ MEDIA_URL }}js/firefoxcup/yahoo-dom-event.js"></script>
-  <script src="{{ MEDIA_URL }}js/firefoxcup/animation-min.js"></script>
-  <script src="{{ MEDIA_URL }}js/firefoxcup/firefoxcup.js"></script>
+{% block site_css %}
+  {{ css('firefoxcup') }}
 {% endblock %}
 
 {% block main_content %}
@@ -173,30 +168,14 @@
         <tr><td colspan="5"></td></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/usa.png" alt="{{ _('Flag') }}" /></td>
-          <td>{{ _('United States') }}</td>
-          <td>###,###</td>
-          <td>###,###</td>
-        </tr>
-        <tr>
-          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/brazil.png" alt="{{ _('Flag') }}" /></td>
-          <td>{{ _('Brazil') }}</td>
-          <td>###,###</td>
-          <td>###,###</td>
-        </tr>
-        <tr>
-          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/argentina.png" alt="{{ _('Flag') }}" /></td>
-          <td>{{ _('Argentina') }}</td>
-          <td>###,###</td>
-          <td>###,###</td>
-        </tr>
-        <tr>
-          <td><img src="{{ MEDIA_URL }}img/firefoxcup/flags/australia.png" alt="{{ _('Flag') }}" /></td>
-          <td>{{ _('Australia') }}</td>
-          <td>###,###</td>
-          <td>###,###</td>
-        </tr>
+        {% for team in teams %}
+          <tr>
+            <td><img src="{{ team.flag }}" alt="{{ _('Flag') }}" /></td>
+            <td>{{ team.name }}</td>
+            <td>###,###</td>
+            <td>###,###</td>
+          </tr>
+        {% endfor %}
       </tbody>
     </table>
 
@@ -220,7 +199,10 @@
 </div><!-- end #wrapper -->
 
 {% endblock %}
+{% block footer %}{% endblock %}
+{% block site_js %}{% endblock %}
 {% block js %}
+  {{ js('firefoxcup') }}
   <script>
     var classOptions = ['default', 'amo', 'rockyourfirefox'];
     var choice = Math.floor(Math.random() * classOptions.length);
