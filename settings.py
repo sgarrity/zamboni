@@ -348,8 +348,11 @@ MINIFY_BUNDLES = {
         # JS files specific to /firefoxcup/
         'firefoxcup': (
             'js/amo2009/global.js',
+            'js/zamboni/jquery-1.4.2.min.js',
             'js/firefoxcup/yahoo-dom-event.js',
             'js/firefoxcup/animation-min.js',
+            'js/zamboni/jquery.hoverIntent.min.js',
+            'js/zamboni/personas.js',
             'js/firefoxcup/firefoxcup.js',
         ),
     }
