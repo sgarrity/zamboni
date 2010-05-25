@@ -311,6 +311,7 @@ MINIFY_BUNDLES = {
         # CSS files specific to /firefoxcup/
         'firefoxcup': (
             'css/firefoxcup/reset-fonts-grids.css',
+            'css/main.css',
             'css/firefoxcup/firefoxcup.css',
         ),
     },
