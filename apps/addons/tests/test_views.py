@@ -94,7 +94,7 @@ class TestPromobox(test_utils.TestCase):
         eq_(response.status_code, 200)
 
 
-class TestDetailPage(amo.tests.TestCase):
+class TestDetailPage(test_utils.TestCase):
     fixtures = ['base/fixtures', 'base/addon_59.json', 'addons/listed',
                 'addons/persona']
 
@@ -376,3 +376,9 @@ def test_button_caching():
     fmt = '%a, %d %b %Y %H:%M:%S GMT'
     expires = datetime.strptime(response['Expires'], fmt)
     assert (expires - datetime.now()).days >= 365
+
+
+def test_unicode_redirect():
+    url = '/en-US/firefox/addon/2848?xx=\xc2\xbcwhscheck\xc2\xbe'
+    response = test.Client().get(url)
+    eq_(response.status_code, 301)

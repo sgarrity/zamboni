@@ -171,7 +171,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.SetRemoteAddrFromForwardedFor',
     'commonware.log.ThreadRequestMiddleware',
 
-    'django.middleware.common.CommonMiddleware',
+    'amo.middleware.CommonMiddleware',
     'amo.middleware.NoVarySessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -423,6 +423,8 @@ BROKER_USER = 'zamboni'
 BROKER_PASSWORD = 'zamboni'
 BROKER_VHOST = 'zamboni'
 CELERY_RESULT_BACKEND = 'amqp'
+CELERY_IGNORE_RESULT = True
+
 
 ## Fixture Magic
 CUSTOM_DUMPS = {
