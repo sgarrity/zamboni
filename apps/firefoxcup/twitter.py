@@ -13,21 +13,21 @@ parser = ttp.Parser()
 bleach = Bleach()
 
 def _prepare_lang(lang):
-    return lang.split('-')[0]
+    lang = lang.split('-')[0]
+    if lang not in config.twitter_languages:
+        lang = 'all'
+    return lang
 
 def _search_query(tags, lang):
     return urlencode({
-        'q': ' OR '.join(tags),
+        'ors': ' '.join(tags),
         'lang': lang})
 
 def search(tags, lang='all', check_cache=True, open=urlopen):
     lang = _prepare_lang(lang)
 
-    if lang not in config.twitter_languages:
-        lang = 'all'
 
     url = "http://search.twitter.com/search.json?" + _search_query(tags, lang)
-    log.debug(url)
 
     # build cache key
     hash = md5(url).hexdigest()
