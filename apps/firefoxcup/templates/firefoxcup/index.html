@@ -68,12 +68,14 @@
 
     <ul class="subfeatures">
 
-      <li id="email">
-        <a href="#">
-          <span class="title">{{ _('Sign Up!') }}</span>
-          <span>{{ _('Stay current with Firefox Cup news by email.') }}</span>
-        </a>
-      </li>
+      {% if email_enabled %}
+        <li id="email">
+          <a href="#">
+            <span class="title">{{ _('Sign Up!') }}</span>
+            <span>{{ _('Stay current with Firefox Cup news by email.') }}</span>
+          </a>
+        </li>
+      {% endif %}
 
       <li id="featured">
         <a href="https://addons.mozilla.org/en-US/firefox/addon/725/" id="featured-footiefox">

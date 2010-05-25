@@ -2,6 +2,8 @@
 from tower import ugettext as _
 from settings import MEDIA_URL
 
+email_enabled = False
+
 tags = {
     'all': [
         '#worldcup', 
