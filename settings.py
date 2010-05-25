@@ -312,6 +312,7 @@ MINIFY_BUNDLES = {
         'firefoxcup': (
             'css/firefoxcup/reset-fonts-grids.css',
             'css/main.css',
+            'css/zamboni/zamboni.css',
             'css/firefoxcup/firefoxcup.css',
         ),
     },

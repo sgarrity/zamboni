@@ -48,66 +48,19 @@
       </div>
 
       <div class="pager-content">
-
-        <div class="personas-contents default-page" id="feature-p1">
-          <script type="text/javascript">
-          document.getElementById('feature-p1').id = 'page-feature-p1';
-          </script>
-          <ul class="personas-list">
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/1/0/7610/preview.jpg" /></li>
-          </ul>
-        </div>
-
-        <div class="personas-contents" id="feature-p2">
-          <script type="text/javascript">
-          document.getElementById('feature-p2').id = 'page-feature-p2';
-          </script>
-          <ul class="personas-list">
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/6/9/64769/preview.jpg" /></li>
-          </ul>
-        </div>
-
-        <div class="personas-contents" id="feature-p3">
-          <script type="text/javascript">
-          document.getElementById('feature-p3').id = 'page-feature-p3';
-          </script>
-          <ul class="personas-list">
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/8/2/141882/preview.jpg" /></li>
-          </ul>
-        </div>
-
-        <div class="personas-contents" id="feature-p4">
-          <script type="text/javascript">
-          document.getElementById('feature-p4').id = 'page-feature-p4';
-          </script>
-          <ul class="personas-list">
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-            <li><img src="http://getpersonas.com/static/2/3/64323/preview.jpg" /></li>
-          </ul>
-        </div>
-
-        <p>{{ _('Dress up your Firefox in team spirits and share the love with friends. The team with the most fans using Personas wins the Firefox Cup!') }}</p>
-
+        {# this ugly loop prints 4 divs, each with a <ul> of 6 items, 
+           each list item is a persona, for a total of 32 team personas #}
+        {% for idx in range(4) %} 
+          <div class="personas-contents {% if loop.index == 1 %}default-page{% endif %}" id="feature-p{{ loop.index }}">
+            <ul class="personas-list">
+              {% for subidx in range(6) %}
+                <li>{{ persona_preview(teams[subidx * idx].persona, size='small', linked=False) }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
       </div>
+      <p>{{ _('Dress up your Firefox in team spirits and share the love with friends. The team with the most fans using Personas wins the Firefox Cup!') }}</p>
     </div>
   </div>
 
@@ -173,7 +126,7 @@
             <td><img src="{{ team.flag }}" alt="{{ _('Flag') }}" /></td>
             <td>{{ team.name }}</td>
             <td>###,###</td>
-            <td>###,###</td>
+            <td>{{ team.persona.popularity|numberfmt }}</td>
           </tr>
         {% endfor %}
       </tbody>
