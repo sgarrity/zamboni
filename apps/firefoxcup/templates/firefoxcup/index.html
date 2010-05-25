@@ -48,12 +48,12 @@
       </div>
 
       <div class="pager-content">
-        {# this ugly loop prints 4 divs, each with a <ul> of 6 items, 
+        {# this ugly loop prints 4 divs (one per pager tab), each with a <ul> of 8 items, 
            each list item is a persona, for a total of 32 team personas #}
         {% for idx in range(4) %} 
           <div class="personas-contents {% if loop.index == 1 %}default-page{% endif %}" id="feature-p{{ loop.index }}">
             <ul class="personas-list">
-              {% for subidx in range(6) %}
+              {% for subidx in range(8) %}
                 <li>{{ persona_preview(teams[subidx * idx].persona, size='small', linked=False) }}</li>
               {% endfor %}
             </ul>
