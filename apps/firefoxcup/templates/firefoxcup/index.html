@@ -125,7 +125,7 @@
       <tbody>
         {% for team in teams %}
           <tr>
-            <td><img src="{{ team.flag }}" alt="{{ _('Flag') }}" /></td>
+            <td class="persona"><img class="persona-preview" src="{{ team.flag }}" alt="{{ _('Flag') }}" data-browsertheme="{{ team.persona.json_data }}" /></td>
             <td>{{ team.name }}</td>
             <td>###,###</td>
             <td>{{ team.persona.popularity|numberfmt }}</td>
