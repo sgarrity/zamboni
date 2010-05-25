@@ -1,33 +1,28 @@
 # coding=utf8
-
 from tower import ugettext as _
 
 tags = {
     'all': [
-        'worldcup', 
-        'football', 
-        'soccer', 
-        'south africa2010', 
-        'mundial',
-        'wcup2010',
-        'mondial'],
+        '#worldcup', 
+        '#football', 
+        '#soccer', 
+        '#south africa2010', 
+        '#wcup2010'],
+    'af': '#Wêreldbeker',
+    'ar': ['كأس العالم','مونديال','المونديال','كأس العالم لكرة القدم' ],
+    'da': ['#vm', 'Fodbold VM'],
+    'de': '#wm',
+    'es': '#mundial',
+    'fr': ['#mondial', '#coupedumonde'],
+    'it': '#IlMondiale',
+    'ja': '#W杯',
+    'ko': '#월드컵',
+    'nl': ['#wk', '#wereldbeker', '#oranje'],
     'ru': 'ЧМ',
-    'fr': 'coupedumonde',
-    'de': 'wm',
-    'ko': '월드컵',
-    'af': 'Wêreldbeker',
-    'da': 'vm',
-    'ar': 'كأس العالم',
-    'el': 'ΠαγκόσμιοΚύπελλο',
-    'it': 'IlMondiale',
-    'ja': 'W杯',
     'sr': 'Светско првенство',
     'sk': 'Svetový pohár',
     'sl': 'Svetovni pokal',
 }
-
-def flag(name):
-    return 'img/firefoxcup/flags/%s.png' % name
 
 teams = {
     'algeria': {
@@ -99,7 +94,7 @@ for name in teams:
     teams[name]['flag'] = 'img/firefoxcup/flags/%s.png' % name
 
 twitter_languages = (
-    'ar', 'da', 'nl', 'en', 'fa', 'fi', 'fr', 'de', 'hu', 'is',
-    'it', 'ja', 'no', 'pl', 'pt', 'ru', 'es', 'sv', 'th'
+    'ar','da','de','en','es','fa','fi','fr','hu',
+    'is','it','ja','nl','no','pl','pt','ru','sv','th',
 )
 

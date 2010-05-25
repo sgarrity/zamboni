@@ -5,7 +5,7 @@ from config import teams, tags
 # Create your views here.
 def index(request):
 
-    tweets = search(tags['all'], request.LANG)
+    tweets = search(tags['all'], lang=request.LANG)
 
     if (len(tweets) < 15):
         extra = search(tags['all'], 'all')

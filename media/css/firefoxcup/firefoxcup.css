@@ -333,7 +333,6 @@ ul.personas-list {
 #teams {
 	width: 625px;
 	float: left;
-	display: inline;
 	border-collapse: separate;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
