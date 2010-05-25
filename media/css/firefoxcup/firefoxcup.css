@@ -184,6 +184,7 @@ body, h1, h2, h3, h4, h5, h6 {
 	font-size: 13px;
 	float: left;
 	margin-left: 5px;
+  margin-top: 5px;
 	padding-right: 25px;
 	background: url(../../img/firefoxcup/arrow.png) 100% 50% no-repeat;
 }
@@ -212,7 +213,6 @@ body, h1, h2, h3, h4, h5, h6 {
 
 .pager-content {
 	clear: both;
-	padding: 20px 0 0 0;
 }
 
 ul.personas-list {
@@ -228,6 +228,14 @@ ul.personas-list {
 	width: 150px;
 	height: 50px;
   border: none !important;
+}
+
+.persona-inner {
+  padding: 0;
+}
+
+.persona-hover .persona-inner {
+  background: none;
 }
 
 #personas p {
