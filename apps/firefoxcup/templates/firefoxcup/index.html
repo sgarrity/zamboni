@@ -4,7 +4,7 @@
 
 {% block site_header %}{% endblock %}
 {% block site_css %}
-  {{ css('firefoxcup') }}
+  {{ css('firefoxcup/f') }}
 {% endblock %}
 
 {% block main_content %}
@@ -53,7 +53,7 @@
           <div class="personas-contents {% if loop.index == 1 %}default-page{% endif %}" id="feature-p{{ loop.index }}">
             <ul class="personas-list">
               {% for team in teams_batch %}
-                <li>{{ persona_preview(team.persona, size='small', linked=False) }}</li>
+                <li>{{ persona_preview(team.persona, size='small', linked=False) if team.persona else 'Persona not found' }}</li>
               {% endfor %}
             </ul>
           </div>
@@ -117,17 +117,17 @@
           <th>{{ _('Flag') }}</th>
           <th>{{ _('Country') }}</th>
           <th>{{ _('Average Fans') }}</th>
-          <th>{{ _('Total Fans') }}</th>
+          <th>{{ _('Fans Today') }}</th>
         </tr>
         <tr><td colspan="5"></td></tr>
       </thead>
       <tbody>
         {% for team in teams %}
           <tr>
-            <td class="persona"><img class="persona-preview" src="{{ team.flag }}" alt="{{ _('Flag') }}" data-browsertheme="{{ team.persona.json_data }}" /></td>
+            <td class="persona"><img class="persona-preview" src="{{ team.flag }}" alt="{{ _('Flag') }}" data-browsertheme="{{ team.persona.json_data if team.persona }}" /></td>
             <td>{{ team.name }}</td>
-            <td>###,###</td>
-            <td>{{ team.persona.popularity|numberfmt }}</td>
+            <td>{{ team.avg_fans|numberfmt if team.avg_fans else 0 }}</td>
+            <td>{{ team.persona.popularity|numberfmt if team.persona else 0 }}</td>
           </tr>
         {% endfor %}
       </tbody>

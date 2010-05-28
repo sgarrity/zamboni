@@ -22,12 +22,7 @@ z.searchBox = function() {
             $('#advanced-search select').attr('disabled', '');
         }
 
-        var q = $('#query');
+        $('#query').placeholder(placeholder);
 
-        // Update the placeholder and trigger a change.
-        q.attr('placeholder', placeholder)
-        if (q.hasClass('placeholder')) {
-            q.val('').blur();
-        }
     }).change();
 };

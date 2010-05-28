@@ -1,12 +1,11 @@
 import jingo
+
 from addons.models import Persona
-from twitter import search
 from . import tags, email_enabled
 from . import teams as teams_config
+from .models import Stats
+from .twitter import search
 
-import logging
-
-log = logging.getLogger('z.firefoxcup')
 
 # Create your views here.
 def index(request):
@@ -20,9 +19,12 @@ def index(request):
     # we only want 15 tweets
     tweets = tweets[:15]
 
-    teams = dict((813, t) for t in teams_config)
+    teams = dict((t['persona_id'], t) for t in teams_config)
     for persona in Persona.objects.filter(persona_id__in=teams.keys()):
         teams[persona.persona_id]['persona'] = persona
+
+    for record in Stats.objects.avg_fans():
+        teams[record['persona_id']]['avg_fans'] = record['avg_fans']
 
     return jingo.render(request, 'firefoxcup/index.html', {
         'tweets': tweets,
