@@ -241,6 +241,7 @@ ul.personas-list {
 #personas p {
 	margin-left: 5px;
 	padding: 20px 0;
+	clear: both;
 }
 
 /* }}} */

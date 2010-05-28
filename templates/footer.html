@@ -1,7 +1,17 @@
     <div id="footer" role="contentinfo">
       <div class="section">
         <div class="primary">
-          {% include 'lang_dropdown.html' %}
+          <form class="languages go" method="get" action="">
+            <label for="language">{{ _('Other languages:') }}</label>
+            <select id="language" name="lang" dir="ltr">
+              {% for code, name in LANGUAGES|dictsort -%}
+                <option value="{{ code }}" {{ code|ifeq(LANG|lower, "selected") }}>
+                  {{ name }}
+                </option>
+              {%- endfor %}
+            </select>
+            <button type="submit">{{ _('Go') }}</button>
+          </form>
           <p>{% trans legalurl="http://www.mozilla.com/en-US/about/legal.html#site", ccurl="http://creativecommons.org/licenses/by-sa/3.0/" -%}
              Except where otherwise <a href="{{ legalurl }}">noted</a>, content on this site is licensed under the
              <strong><a href="{{ ccurl }}">Creative Commons Attribution Share-Alike License v3.0</a></strong> or any later version
@@ -10,10 +20,10 @@
           <ul>
             <li><a href="http://www.mozilla.com/{{ LANG }}/privacy-policy.html">{{ _('Privacy Policy') }}</a></li>
             <li><a href="http://www.mozilla.com/{{ LANG }}/about/legal.html">{{ _('Legal Notices') }}</a></li>
-            <li><a href="{{ remora_url('pages/about') }}">{{ _('About') }}</a></li>
+            <li><a href="{{ url('pages.about') }}">{{ _('About') }}</a></li>
             <li><a href="http://blog.mozilla.com/addons">{{ _('Blog') }}</a></li>
             <li><a href="{{ remora_url('/developers') }}{# TODO #}">{{ _('Developer Hub') }}</a></li>
-            <li><a href="{{ remora_url('pages/faq') }}"><abbr title="{{ _('Frequently Asked Questions') }}">{{ _('FAQ') }}</abbr></a></li>
+            <li><a href="{{ url('pages.faq') }}"><abbr title="{{ _('Frequently Asked Questions') }}">{{ _('FAQ') }}</abbr></a></li>
             <li><a href="https://forums.addons.mozilla.org">{{ _('Forum') }}</a></li>
           </ul>
           <p class="disclaimer">{% trans -%}Mozilla is providing links to these applications as a courtesy, and makes no representations
