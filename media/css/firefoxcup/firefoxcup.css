@@ -28,6 +28,12 @@ body, h1, h2, h3, h4, h5, h6 {
 	overflow: auto;
 }
 
+[dir="rtl"] #doc,
+[dir="rtl"] td,
+[dir="rtl"] th {
+	text-align:right;
+}
+
 .section {
 	max-width: none;
 	min-height: 0;
@@ -123,7 +129,7 @@ body, h1, h2, h3, h4, h5, h6 {
 #download a span.title {
 	font-size: 24px;
 	line-height: 1.5;
-	padding: 15px 0 0 5px;
+	padding: 15px 90px 0 5px;
 	color: #fff;
 }
 
@@ -347,6 +353,7 @@ ul.personas-list {
 
 #teams-section {
 	width: 625px;
+	float: left;
 }
 
 #teams {
@@ -392,6 +399,24 @@ ul.personas-list {
 	border-right: 0;
 }
 
+[dir="rtl"] #teams thead th:first-child {
+	-webkit-border-top-right-radius: 10px;
+	-moz-border-radius-topright: 10px;
+	border-top-right-radius: 10px;
+	-webkit-border-top-left-radius: 0px;
+	-moz-border-radius-topleft: 0px;
+	border-top-left-radius: 0px;
+}
+
+[dir="rtl"] #teams thead th:last-child {
+	-webkit-border-top-left-radius: 10px;
+	-moz-border-radius-topleft: 10px;
+	border-top-left-radius: 10px;
+	-webkit-border-top-right-radius: 0px;
+	-moz-border-radius-topright: 0px;
+	border-top-right-radius: 0px;
+}
+
 #teams thead td {
 	background: #a8e3f6;
 	padding: 1px;
@@ -412,8 +437,18 @@ ul.personas-list {
 	border-left: 1px solid #eee;
 }
 
+[dir="rtl"] #teams tbody td:first-child {
+    border-right: 1px solid #eee;
+    border-left: 1px solid #fff;
+}
+
 #teams tbody td:last-child {
 	border-right: 1px solid #eee;
+}
+
+[dir="rtl"] #teams tbody td:last-child {
+    border-left: 1px solid #eee;
+    border-right: 1px solid #c0e2ec;
 }
 
 #teams tbody tr:last-child td {
@@ -426,10 +461,28 @@ ul.personas-list {
 	border-bottom-left-radius: 10px;
 }
 
+[dir="rtl"] #teams tbody tr:last-child td:first-child {
+	-webkit-border-bottom-right-radius: 10px;
+	-moz-border-radius-bottomright: 10px;
+	border-bottom-right-radius: 10px;
+	-webkit-border-bottom-left-radius: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	border-bottom-left-radius: 0px;
+}
+
 #teams tbody tr:last-child td:last-child {
 	-webkit-border-bottom-right-radius: 10px;
 	-moz-border-radius-bottomright: 10px;
 	border-bottom-right-radius: 10px;
+}
+
+[dir="rtl"] #teams tbody tr:last-child td:last-child {
+	-webkit-border-bottom-left-radius: 10px;
+	-moz-border-radius-bottomleft: 10px;
+	border-bottom-left-radius: 10px;
+	-webkit-border-bottom-right-radius: 0px;
+	-moz-border-radius-bottomright: 0px;
+	border-bottom-right-radius: 0px;
 }
 
 #teams tfoot { display: none; }
@@ -490,6 +543,12 @@ ul.personas-list {
 	background: url(../../img/firefoxcup/twitter.png) 0 50% no-repeat;
 	padding: 12px 0;
 	padding-left: 50px;
+}
+
+[dir="rtl"] #tweets thead th a {
+	background-position: 100% 50%;
+	padding-left: 0;
+	padding-right: 50px;
 }
 
 #tweets thead th a:link,
