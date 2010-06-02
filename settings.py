@@ -18,8 +18,6 @@ ROOT_PACKAGE = os.path.basename(ROOT)
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 DEBUG_PROPAGATE_EXCEPTIONS = True
-LOG_LEVEL = logging.DEBUG
-SYSLOG_TAG = "http_app_addons"
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -58,9 +56,9 @@ LANGUAGE_CODE = 'en-US'
 
 # Accepted locales
 AMO_LANGUAGES = (
-    'ar', 'ca', 'cs', 'da', 'de', 'el', 'en-US', 'es-ES', 'eu',
+    'af', 'ar', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'es-ES', 'eu',
     'fa', 'fi', 'fr', 'ga-IE', 'he', 'hu', 'id', 'it', 'ja', 'ko',
-    'mn', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sq',
+    'mn', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sl', 'sq', 'sr',
     'sv-SE', 'uk', 'vi', 'zh-CN', 'zh-TW',
 )
 
@@ -105,8 +103,8 @@ MEDIA_URL = '/media//'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # paths that don't require an app prefix
-SUPPORTED_NONAPPS = ('admin', 'developers', 'editors', 'img', 'jsi18n',
-                     'localizers', 'media', 'statistics', 'services', 'firefoxcup')
+SUPPORTED_NONAPPS = ('admin', 'developers', 'editors', 'firefoxcup', 'img',
+                     'jsi18n', 'localizers', 'media', 'statistics', 'services')
 DEFAULT_APP = 'firefox'
 
 # paths that don't require a locale prefix
@@ -350,10 +348,12 @@ MINIFY_BUNDLES = {
         # JS files specific to /firefoxcup/
         'firefoxcup': (
             'js/zamboni/jquery-1.4.2.min.js',
+            'js/firefoxcup/browserdetect.js',
             'js/firefoxcup/yahoo-dom-event.js',
             'js/firefoxcup/animation.js',
             'js/zamboni/jquery.hoverIntent.min.js',
             'js/zamboni/personas.js',
+            'js/zamboni/jquery.sparkline.min.js',
             'js/firefoxcup/firefoxcup.js',
         ),
     }
@@ -454,4 +454,19 @@ CUSTOM_DUMPS = {
                   'files.platform', 'addons.addon', 'versions.version',
                   'files.file'),
     }
+}
+
+# Logging
+LOG_LEVEL = logging.DEBUG
+HAS_SYSLOG = True  # syslog is used if HAS_SYSLOG and NOT DEBUG.
+SYSLOG_TAG = "http_app_addons"
+# See PEP 391 and log_settings.py for formatting help.  Each section of LOGGING
+# will get merged into the corresponding section of log_settings.py.
+# Handlers and log levels are set up automatically based on LOG_LEVEL and DEBUG
+# unless you set them here.  Messages will not propagate through a logger
+# unless propagate: True is set.
+LOGGING = {
+    'loggers': {
+        'caching': {'handlers': ['null']},
+    },
 }

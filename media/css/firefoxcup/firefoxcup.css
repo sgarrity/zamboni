@@ -299,7 +299,7 @@ ul.personas-list {
 	min-height: 80px;
 }
 
-#sidebar .subfeatures li a#featured-footiefox {
+#sidebar .subfeatures li a#footiefox {
 	background-image: url(../../img/firefoxcup/footiefox.png);
 }
 
@@ -323,16 +323,13 @@ ul.personas-list {
 	min-height: 54px;
 }
 
-.default #sidebar .subfeatures li a#featured-footiefox { display: block; }
 .default #sidebar .subfeatures li a#featured-rockyourfirefox,
 .default #sidebar .subfeatures li a#featured-amo { display: none; }
 
 .rockyourfirefox #sidebar .subfeatures li a#featured-rockyourfirefox { display: block; }
-.rockyourfirefox #sidebar .subfeatures li a#featured-footiefox,
 .rockyourfirefox #sidebar .subfeatures li a#featured-amo { display: none; }
 
 .amo #sidebar .subfeatures li a#featured-amo { display: block; }
-.amo #sidebar .subfeatures li a#featured-footiefox,
 .amo #sidebar .subfeatures li a#featured-rockyourfirefox { display: none; }
 
 /* }}} */
@@ -584,3 +581,11 @@ tbody tr th, tbody tr td {
 }
 
 /* }}} */
+/* Sparkline */
+td.fans {
+  text-align: center;
+}
+.inlinesparkline {
+  display: none;
+  margin: 0 15px;
+}
