@@ -168,13 +168,7 @@
       $('body').addClass(classOptions[choice]);
 
       // set random team background image
-      var teams = [
-      {% for team in teams %}
-  '{{ team.id }}'{% if not loop.last %},
-{% endif %}
-      {% endfor %}
-
-      ];
+      var teams = [ {% for team in teams %}'{{ team.id }}', {% endfor %} 'default' ];
 
       var platform = (navigator.appVersion.indexOf('Mac') !== -1) ? 'mac' : 'pc';
       choice = Math.floor(Math.random() * teams.length);
