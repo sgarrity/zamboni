@@ -52,14 +52,13 @@ body, h1, h2, h3, h4, h5, h6 {
 
 #header {
 	float: right;
+	padding-top: 10px;
 }
 
 #header li {
-	float: left;
+	display: inline;
 	border-left: 1px solid #209b1e;
 	padding: 0 10px;
-	margin-top: 15px;
-	height: 25px;
 }
 
 #header li.first {
@@ -74,8 +73,10 @@ body, h1, h2, h3, h4, h5, h6 {
 #header a:active {
 	color: #fff;
 	text-decoration: underline;
-	display: block;
-	padding: 5px 0;
+}
+
+#header form {
+	display: inline;
 }
 
 #header .languages label {
